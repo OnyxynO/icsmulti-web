@@ -9,7 +9,7 @@
 ICSMulti existe déjà en version desktop macOS (Swift, DMG, repo `icsmulti`).
 Ce document spécifie l'extension web : même fonctionnalité, déclinée en 3 nouveaux modules partageant un core TypeScript commun.
 
-**Repo dédié :** `icsmulti-web` (distinct du repo Swift, Turborepo)
+**Repo dédié :** `icsmulti-web` (distinct du repo Swift, npm workspaces natif)
 **Déploiement :** Vercel
 
 ---
@@ -22,12 +22,82 @@ icsmulti-web/
 │   └── site/              ← Next.js — landing page + module web + API routes
 ├── packages/
 │   ├── core/              ← ICS generator TypeScript (partagé)
-│   └── widget/            ← bundle JS intégrable (partagé)
-├── turbo.json
-└── package.json
+│   └── widget/            ← bundle JS intégrable (Vite lib mode)
+├── biome.json             ← lint + format pour tous les packages
+├── tsconfig.base.json     ← config TypeScript partagée, étendue par chaque package
+└── package.json           ← workspaces: ["apps/*", "packages/*"]
 ```
 
 `apps/site` regroupe le site de présentation, le formulaire web et les endpoints API dans une seule app Next.js → un seul déploiement Vercel.
+
+### Choix : npm workspaces natif (pas Turborepo)
+
+Leçon tirée de `pi-mono` (7 packages, npm workspaces sans Turborepo) :
+- Turborepo apporte cache de build et détection de dépendances automatique — utile pour 10+ packages en CI intensive
+- Pour 2 packages + 1 app, npm workspaces natif est suffisant et plus simple
+- L'ordre de build est explicite dans les scripts racine :
+
+```json
+"build": "npm run build -w packages/core && npm run build -w packages/widget && npm run build -w apps/site",
+"dev": "concurrently \"npm run dev -w packages/core\" \"npm run dev -w apps/site\""
+```
+
+---
+
+## Tooling (leçons pi-mono)
+
+### Biome — lint + format en un seul outil
+Remplace ESLint + Prettier. Config unique `biome.json` à la racine, appliquée à tous les packages.
+```json
+{
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 120 },
+  "linter": { "enabled": true, "rules": { "recommended": true } },
+  "files": { "includes": ["packages/*/src/**/*.ts", "apps/*/src/**/*.ts", "apps/*/**/*.tsx"] }
+}
+```
+Commande unique depuis la racine : `biome check --write .`
+
+### tsconfig.base.json partagé
+Chaque package l'étend via `"extends": "../../tsconfig.base.json"`.
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  }
+}
+```
+
+### Vitest — tests unitaires
+Remplace Jest. Natif ESM, config minimale, très rapide.
+```ts
+// vitest.config.ts dans chaque package
+import { defineConfig } from 'vitest/config'
+export default defineConfig({ test: { include: ['src/**/*.test.ts'] } })
+```
+
+### `package.json` exports — obligatoire pour les packages partagés
+Leçon pi-mono : sans le champ `exports`, TypeScript et les bundlers ne trouvent pas les bons fichiers.
+```json
+{
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}
+```
 
 ---
 
@@ -74,11 +144,12 @@ genererICS(evenement: Evenement, options?: OptionsExport): string
 - `DTSTAMP` et `UID` uniques par occurrence
 - Fuseau horaire explicite dans `DTSTART`/`DTEND`
 
-### Tests
+### Tests (Vitest)
 
 - Fichier généré parseable par un parser ICS tiers (ex: `ical.js`)
 - Chaque contrainte RFC ci-dessus couverte par un test unitaire
 - Cas limites : titre vide, occurrence sans lieu, événement journée entière multi-jours
+- Tests exécutables depuis la racine : `npm test -w packages/core`
 
 ---
 
@@ -179,7 +250,7 @@ Script JS intégrable dans n'importe quel site existant. Bundle autonome (CSS in
 
 ```html
 <div id="icsmulti-widget"></div>
-<script src="https://icsmulti.vercel.app/widget.js"></script>
+<script src="https://icsmulti-web.vercel.app/widget.js"></script>
 <script>
   ICSMulti.init({
     container: '#icsmulti-widget',
@@ -198,10 +269,27 @@ Script JS intégrable dans n'importe quel site existant. Bundle autonome (CSS in
 - CSS scopé (préfixe `icsmulti-`) pour ne pas polluer les styles du site hôte
 - Zéro dépendance externe dans le bundle
 
-### Build
+### Build (Vite en mode `lib`)
 
-- Bundlé séparément (Vite en mode `lib`)
-- Servi depuis `apps/site/public/widget.js`
+Leçon pi-mono (`web-ui`) : le CSS est buildé séparément et exporté indépendamment du JS.
+
+```ts
+// vite.config.ts dans packages/widget
+export default defineConfig({
+  build: {
+    lib: {
+      entry: 'src/index.ts',
+      name: 'ICSMulti',
+      fileName: 'widget',
+      formats: ['iife']   // bundle autonome, pas d'import/export
+    },
+    cssCodeSplit: false    // CSS inline dans le bundle JS (CSS scopé)
+  }
+})
+```
+
+- Output : `dist/widget.iife.js` → copié dans `apps/site/public/widget.js` au build
+- CSS scopé avec préfixe `icsmulti-` → pas de collision avec les styles du site hôte
 - Taille cible : < 20 Ko gzippé
 
 ---
@@ -268,9 +356,9 @@ Toutes les chaînes UI externalisées dès le début — pas de refactoring i18n
 
 ## Étapes de développement suggérées
 
-1. **Setup monorepo** — Turborepo + pnpm, structure de base, Vercel linké
-2. **Package core** — portage TypeScript + tests RFC 5545
-3. **Module web** — formulaire Next.js + autocomplétion Nominatim + export
-4. **Module API** — endpoint `/api/generate` + validation + doc
-5. **Site landing** — présentation des modules, pages `/app`, `/api-docs`, `/desktop`
-6. **Module widget** — bundle Vite, intégration dans `public/`
+1. **Setup monorepo** — npm workspaces + Biome + tsconfig.base.json, structure de base, Vercel linké
+2. **Package core** — portage TypeScript + tests Vitest (RFC 5545)
+3. **Module web** — formulaire Next.js + autocomplétion Nominatim + export côté client
+4. **Module API** — endpoint `/api/generate` + clé API (Upstash KV) + page `/api-key`
+5. **Site landing** — i18n next-intl + pages `/app`, `/api-docs`, `/widget`, `/desktop`
+6. **Module widget** — bundle Vite IIFE + copie dans `apps/site/public/`
