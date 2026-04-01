@@ -1,0 +1,66 @@
+{
+  "nav": {
+    "app": "App",
+    "api": "API",
+    "widget": "Widget",
+    "desktop": "Desktop"
+  },
+  "landing": {
+    "hero_titre": "ICSMulti",
+    "hero_sous_titre": "Generate .ics files compatible with all calendars",
+    "hero_cta": "Open the app",
+    "module_web_titre": "Web form",
+    "module_web_desc": "Create your .ics file directly in the browser, no installation needed.",
+    "module_web_cta": "Use it →",
+    "module_api_titre": "REST API",
+    "module_api_desc": "Integrate .ics generation into your applications via a simple HTTP request.",
+    "module_api_cta": "Documentation →",
+    "module_widget_titre": "Widget",
+    "module_widget_desc": "Embed the generator on any website with a simple script.",
+    "module_widget_cta": "Learn more →",
+    "module_desktop_titre": "macOS App",
+    "module_desktop_desc": "The native app to generate multi-occurrence events.",
+    "module_desktop_cta": "Download →"
+  },
+  "app_page": {
+    "titre": ".ics File Generator",
+    "sous_titre": "Create an event compatible with all calendars (Apple, Google, Outlook…)"
+  },
+  "api_docs": {
+    "titre": "API Documentation",
+    "sous_titre": "Generate .ics files programmatically via the REST API.",
+    "endpoint_titre": "Endpoint",
+    "auth_titre": "Authentication",
+    "auth_desc": "Add your API key in the X-API-Key header:",
+    "exemple_titre": "Request example",
+    "cle_api_lien": "Get an API key →"
+  },
+  "widget_page": {
+    "titre": "Embeddable Widget",
+    "sous_titre": "Embed the ICS generator on any website.",
+    "disponible_bientot": "Coming soon"
+  },
+  "desktop_page": {
+    "titre": "macOS App",
+    "sous_titre": "The native ICSMulti app for macOS.",
+    "description": "Generate multi-occurrence events with timezone, reminders, and locations directly from your Mac.",
+    "telecharger": "Download on GitHub",
+    "github_url": "https://github.com/OnyxynO/icsmulti/releases"
+  },
+  "api_key_page": {
+    "titre": "API Keys",
+    "sous_titre": "Generate an API key to access POST /api/generate from your applications.",
+    "section_utilisation": "Usage",
+    "texte_utilisation": "Add your key in the X-API-Key header of each request:",
+    "copier_maintenant": "⚠ Copy this key now — it will not be shown again",
+    "label_champ": "Label",
+    "optionnel": "(optional)",
+    "placeholder_label": "E.g. My app, Production script…",
+    "bouton_generer": "Generate an API key",
+    "generer_en_cours": "Generating…"
+  },
+  "footer": {
+    "copyright": "© 2026 ICSMulti",
+    "github": "GitHub"
+  }
+}

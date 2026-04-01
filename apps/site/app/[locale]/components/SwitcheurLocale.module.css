@@ -1,0 +1,21 @@
+/* ─── Bouton de changement de locale ──────────────────────────────────────── */
+.bouton {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.5px;
+  color: #999;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.bouton:hover {
+  color: #ededed;
+  border-color: #555;
+  background: rgba(255, 255, 255, 0.06);
+}

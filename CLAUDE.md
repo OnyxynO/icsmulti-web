@@ -45,9 +45,9 @@ Toujours builder `core` en premier — `site` et `widget` en dépendent.
 ## Phases de développement
 
 - [x] **Phase 1** — Setup monorepo (npm workspaces + Biome + tsconfig.base.json)
-- [ ] **Phase 2** — `packages/core` : portage TypeScript de `ICSGenerator.swift` + tests Vitest
-- [ ] **Phase 3** — Module web : formulaire Next.js + Nominatim + export client
-- [ ] **Phase 4** — Module API : `POST /api/generate` + clés API (Upstash KV) + page `/api-key`
+- [x] **Phase 2** — `packages/core` : portage TypeScript de `ICSGenerator.swift` + tests Vitest
+- [x] **Phase 3** — Module web : formulaire Next.js + Nominatim + export client
+- [x] **Phase 4** — Module API : `POST /api/generate` + clés API (Upstash KV) + page `/api-key`
 - [ ] **Phase 5** — Site landing : i18n next-intl + pages `/app`, `/api-docs`, `/widget`, `/desktop`
 - [ ] **Phase 6** — Module widget : bundle Vite IIFE → `apps/site/public/widget.js`
 

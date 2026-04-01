@@ -151,7 +151,7 @@
   border-radius: var(--rayon-petit);
   word-break: break-all;
   color: #171717;
-  user-select: all; /* sélection en un clic */
+  user-select: all;
 }
 
 /* ─── Erreur ──────────────────────────────────────────────────────────────── */

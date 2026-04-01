@@ -1,0 +1,61 @@
+/* ─── Barre de navigation ─────────────────────────────────────────────────── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.interieur {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 56px;
+}
+
+/* ─── Logo ────────────────────────────────────────────────────────────────── */
+.logo {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #ededed;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+/* ─── Liens ───────────────────────────────────────────────────────────────── */
+.liens {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  flex: 1;
+}
+
+.lien {
+  font-size: 14px;
+  font-weight: 500;
+  color: #999;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.lien:hover {
+  color: #ededed;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .liens {
+    display: none;
+  }
+}

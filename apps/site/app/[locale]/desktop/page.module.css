@@ -1,0 +1,73 @@
+/* ─── Page /desktop ───────────────────────────────────────────────────────── */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #ededed;
+  font-family: var(--font-geist-sans, Arial, Helvetica, sans-serif);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  gap: 24px;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.entete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.icone {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.titre {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.sousTitre {
+  font-size: 15px;
+  color: #888;
+  line-height: 1.5;
+}
+
+.description {
+  font-size: 15px;
+  color: #777;
+  line-height: 1.7;
+  max-width: 480px;
+}
+
+.boutonTelechargement {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: #6366f1;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.boutonTelechargement:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+}

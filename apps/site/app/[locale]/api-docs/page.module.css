@@ -1,0 +1,89 @@
+/* ─── Page /api-docs ──────────────────────────────────────────────────────── */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #ededed;
+  font-family: var(--font-geist-sans, Arial, Helvetica, sans-serif);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+  gap: 40px;
+}
+
+/* ─── En-tête ─────────────────────────────────────────────────────────────── */
+.entete {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titre {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.sousTitre {
+  font-size: 15px;
+  color: #888;
+  line-height: 1.5;
+}
+
+/* ─── Sections ────────────────────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.titreSec {
+  font-size: 17px;
+  font-weight: 600;
+  color: #ededed;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.texte {
+  font-size: 14px;
+  color: #888;
+  line-height: 1.6;
+}
+
+/* ─── Blocs de code ───────────────────────────────────────────────────────── */
+.bloc {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 13px;
+  line-height: 1.7;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 16px 18px;
+  overflow-x: auto;
+  white-space: pre;
+  color: #ededed;
+  margin: 0;
+}
+
+/* ─── Lien clé API ────────────────────────────────────────────────────────── */
+.lienCleApi {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6366f1;
+  text-decoration: none;
+  align-self: flex-start;
+  transition: color 0.15s ease;
+}
+
+.lienCleApi:hover {
+  color: #818cf8;
+}

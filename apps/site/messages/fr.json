@@ -1,0 +1,66 @@
+{
+  "nav": {
+    "app": "App",
+    "api": "API",
+    "widget": "Widget",
+    "desktop": "Desktop"
+  },
+  "landing": {
+    "hero_titre": "ICSMulti",
+    "hero_sous_titre": "Générez des fichiers .ics compatibles avec tous les calendriers",
+    "hero_cta": "Ouvrir l'app",
+    "module_web_titre": "Formulaire web",
+    "module_web_desc": "Créez votre fichier .ics directement dans le navigateur, sans installation.",
+    "module_web_cta": "Utiliser →",
+    "module_api_titre": "API REST",
+    "module_api_desc": "Intégrez la génération .ics dans vos applications via une simple requête HTTP.",
+    "module_api_cta": "Documentation →",
+    "module_widget_titre": "Widget",
+    "module_widget_desc": "Intégrez le générateur sur n'importe quel site avec un simple script.",
+    "module_widget_cta": "En savoir plus →",
+    "module_desktop_titre": "App macOS",
+    "module_desktop_desc": "L'application native pour générer des événements multi-occurrences.",
+    "module_desktop_cta": "Télécharger →"
+  },
+  "app_page": {
+    "titre": "Générateur de fichier .ics",
+    "sous_titre": "Créez un événement compatible avec tous les calendriers (Apple, Google, Outlook…)"
+  },
+  "api_docs": {
+    "titre": "Documentation API",
+    "sous_titre": "Générez des fichiers .ics programmatiquement via l'API REST.",
+    "endpoint_titre": "Endpoint",
+    "auth_titre": "Authentification",
+    "auth_desc": "Ajoutez votre clé API dans le header X-API-Key :",
+    "exemple_titre": "Exemple de requête",
+    "cle_api_lien": "Obtenir une clé API →"
+  },
+  "widget_page": {
+    "titre": "Widget embarquable",
+    "sous_titre": "Intégrez le générateur ICS sur n'importe quel site.",
+    "disponible_bientot": "Disponible prochainement"
+  },
+  "desktop_page": {
+    "titre": "App macOS",
+    "sous_titre": "L'application native ICSMulti pour macOS.",
+    "description": "Générez des événements multi-occurrences avec fuseau horaire, rappels et lieux directement depuis votre Mac.",
+    "telecharger": "Télécharger sur GitHub",
+    "github_url": "https://github.com/OnyxynO/icsmulti/releases"
+  },
+  "api_key_page": {
+    "titre": "Clés API",
+    "sous_titre": "Générez une clé API pour accéder à POST /api/generate depuis vos applications.",
+    "section_utilisation": "Utilisation",
+    "texte_utilisation": "Ajoutez votre clé dans le header X-API-Key de chaque requête :",
+    "copier_maintenant": "⚠ Copiez cette clé maintenant — elle ne sera plus affichée",
+    "label_champ": "Label",
+    "optionnel": "(optionnel)",
+    "placeholder_label": "Ex : Mon application, Script de prod…",
+    "bouton_generer": "Générer une clé API",
+    "generer_en_cours": "Génération…"
+  },
+  "footer": {
+    "copyright": "© 2026 ICSMulti",
+    "github": "GitHub"
+  }
+}
