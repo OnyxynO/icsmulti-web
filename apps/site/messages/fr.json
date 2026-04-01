@@ -37,8 +37,14 @@
   },
   "widget_page": {
     "titre": "Widget embarquable",
-    "sous_titre": "Intégrez le générateur ICS sur n'importe quel site.",
-    "disponible_bientot": "Disponible prochainement"
+    "sous_titre": "Intégrez le générateur ICS sur n'importe quel site en 3 lignes.",
+    "etape1_titre": "1. Ajoutez le conteneur",
+    "etape2_titre": "2. Chargez le script",
+    "etape3_titre": "3. Initialisez",
+    "options_titre": "Options",
+    "option_container": "container — sélecteur CSS du conteneur (défaut : #icsmulti-widget)",
+    "option_theme": "theme — \"light\" | \"dark\" | \"auto\" (défaut : \"auto\")",
+    "option_lang": "lang — \"fr\" | \"en\" (défaut : langue du navigateur)"
   },
   "desktop_page": {
     "titre": "App macOS",

@@ -37,8 +37,14 @@
   },
   "widget_page": {
     "titre": "Embeddable Widget",
-    "sous_titre": "Embed the ICS generator on any website.",
-    "disponible_bientot": "Coming soon"
+    "sous_titre": "Embed the ICS generator on any website in 3 lines.",
+    "etape1_titre": "1. Add the container",
+    "etape2_titre": "2. Load the script",
+    "etape3_titre": "3. Initialize",
+    "options_titre": "Options",
+    "option_container": "container — CSS selector for the container (default: #icsmulti-widget)",
+    "option_theme": "theme — \"light\" | \"dark\" | \"auto\" (default: \"auto\")",
+    "option_lang": "lang — \"fr\" | \"en\" (default: browser language)"
   },
   "desktop_page": {
     "titre": "macOS App",
