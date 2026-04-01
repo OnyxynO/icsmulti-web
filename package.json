@@ -1,0 +1,19 @@
+{
+  "name": "icsmulti-web",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w packages/core && npm run build -w packages/widget && npm run build -w apps/site",
+    "dev": "concurrently \"npm run dev -w packages/core\" \"npm run dev -w apps/site\"",
+    "test": "npm test --workspaces --if-present",
+    "check": "biome check --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.5",
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.3"
+  }
+}

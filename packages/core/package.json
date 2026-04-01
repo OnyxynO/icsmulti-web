@@ -1,0 +1,23 @@
+{
+  "name": "@icsmulti/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --project tsconfig.json --watch",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "*",
+    "vitest": "^3.2.4"
+  }
+}
