@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { genererICS, type Evenement, type Occurrence } from "./index.js";
+import { type Evenement, genererICS, type Occurrence } from "./index.js";
 
 // ─── Données de test réutilisables ────────────────────────────────────────────
 
@@ -101,9 +101,7 @@ describe("genererICS", () => {
     // Aucune ligne (avant dépliage) ne doit dépasser 75 octets
     const lignes = resultat.split("\r\n").filter((l) => l.length > 0);
     const encoder = new TextEncoder();
-    const lignesTropLongues = lignes.filter(
-      (l) => encoder.encode(l).length > 75,
-    );
+    const lignesTropLongues = lignes.filter((l) => encoder.encode(l).length > 75);
     expect(lignesTropLongues).toHaveLength(0);
   });
 
@@ -315,9 +313,7 @@ describe("genererICS", () => {
     };
     const resultat = genererICS(evenement);
     const lignes = depilerLignes(resultat);
-    const uids = lignes
-      .filter((l) => l.startsWith("UID:"))
-      .map((l) => l.slice(4));
+    const uids = lignes.filter((l) => l.startsWith("UID:")).map((l) => l.slice(4));
 
     expect(uids).toHaveLength(2);
     expect(uids[0]).not.toBe(uids[1]);
@@ -326,9 +322,9 @@ describe("genererICS", () => {
   // ── Validation du fuseau ──────────────────────────────────────────────────
 
   it("fuseau invalide : lancer une Error avec message explicite", () => {
-    expect(() =>
-      genererICS(evenementSimple, { fuseau: "UTC+2" }),
-    ).toThrow('Fuseau horaire invalide : "UTC+2". Utiliser un identifiant IANA comme "Europe/Paris".');
+    expect(() => genererICS(evenementSimple, { fuseau: "UTC+2" })).toThrow(
+      'Fuseau horaire invalide : "UTC+2". Utiliser un identifiant IANA comme "Europe/Paris".',
+    );
   });
 
   // ── Échappement de \r ──────────────────────────────────────────────────────
