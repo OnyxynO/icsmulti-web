@@ -30,11 +30,11 @@ const CRLF = "\r\n";
  */
 function echapper(valeur: string): string {
   return valeur
-    .replace(/\\/g, "\\\\")   // \ → \\
-    .replace(/;/g, "\\;")     // ; → \;
-    .replace(/,/g, "\\,")     // , → \,
-    .replace(/\r/g, "")       // \r supprimé AVANT \n pour éviter que \r\n génère un CRLF parasite
-    .replace(/\n/g, "\\n");   // newline → \n (littéral)
+    .replace(/\\/g, "\\\\") // \ → \\
+    .replace(/;/g, "\\;") // ; → \;
+    .replace(/,/g, "\\,") // , → \,
+    .replace(/\r/g, "") // \r supprimé AVANT \n pour éviter que \r\n génère un CRLF parasite
+    .replace(/\n/g, "\\n"); // newline → \n (littéral)
 }
 
 /**
@@ -114,8 +114,7 @@ function formaterDateHeure(date: Date, fuseau: string): string {
   }).formatToParts(date);
 
   // On récupère chaque composante par type
-  const get = (type: string) =>
-    parties.find((p) => p.type === type)?.value ?? "00";
+  const get = (type: string) => parties.find((p) => p.type === type)?.value ?? "00";
 
   const annee = get("year");
   const mois = get("month");
@@ -160,12 +159,7 @@ function genererValarm(rappelMinutes: number): string {
 /**
  * Génère un bloc VEVENT complet pour une occurrence donnée.
  */
-function genererVevent(
-  occurrence: Occurrence,
-  evenement: Evenement,
-  fuseau: string,
-  maintenant: Date,
-): string {
+function genererVevent(occurrence: Occurrence, evenement: Evenement, fuseau: string, maintenant: Date): string {
   let bloc = "";
   bloc += `BEGIN:VEVENT${CRLF}`;
 
@@ -186,14 +180,8 @@ function genererVevent(
     bloc += propriete("DTEND;VALUE=DATE", formaterDate(finJournee));
   } else {
     // Événement horodaté avec TZID explicite
-    bloc += propriete(
-      `DTSTART;TZID=${fuseau}`,
-      formaterDateHeure(occurrence.dateDebut, fuseau),
-    );
-    bloc += propriete(
-      `DTEND;TZID=${fuseau}`,
-      formaterDateHeure(occurrence.dateFin, fuseau),
-    );
+    bloc += propriete(`DTSTART;TZID=${fuseau}`, formaterDateHeure(occurrence.dateDebut, fuseau));
+    bloc += propriete(`DTEND;TZID=${fuseau}`, formaterDateHeure(occurrence.dateFin, fuseau));
   }
 
   // Titre et notes — échappement obligatoire
@@ -233,9 +221,7 @@ export function genererICS(evenement: Evenement, options?: OptionsExport): strin
   try {
     new Intl.DateTimeFormat("fr-FR", { timeZone: fuseau });
   } catch {
-    throw new Error(
-      `Fuseau horaire invalide : "${fuseau}". Utiliser un identifiant IANA comme "Europe/Paris".`,
-    );
+    throw new Error(`Fuseau horaire invalide : "${fuseau}". Utiliser un identifiant IANA comme "Europe/Paris".`);
   }
 
   // On fixe un instant de génération commun à toutes les occurrences

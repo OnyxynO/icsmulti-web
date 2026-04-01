@@ -1,0 +1,360 @@
+/* ─── Variables locales ───────────────────────────────────────────────────── */
+.conteneur {
+  --couleur-accent: #0070f3;
+  --couleur-accent-hover: #005bb5;
+  --couleur-erreur: #d32f2f;
+  --couleur-succes: #2e7d32;
+  --couleur-bordure: #d0d0d0;
+  --couleur-bordure-focus: #0070f3;
+  --couleur-fond-carte: #f9f9f9;
+  --couleur-fond-champ: #ffffff;
+  --rayon: 8px;
+  --rayon-petit: 4px;
+
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+  font-family: var(--font-geist-sans, Arial, Helvetica, sans-serif);
+}
+
+/* ─── En-tête ─────────────────────────────────────────────────────────────── */
+.entete {
+  margin-bottom: 36px;
+  text-align: center;
+}
+
+.titre {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--foreground, #171717);
+  margin-bottom: 8px;
+}
+
+.sousTitre {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* ─── Formulaire ──────────────────────────────────────────────────────────── */
+.formulaire {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─── Groupes de champs ───────────────────────────────────────────────────── */
+.groupe {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.groupe label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground, #171717);
+}
+
+.obligatoire {
+  color: var(--couleur-erreur);
+}
+
+/* ─── Champs de saisie ────────────────────────────────────────────────────── */
+.champ {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-petit);
+  background: var(--couleur-fond-champ);
+  color: var(--foreground, #171717);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.champ:focus {
+  border-color: var(--couleur-bordure-focus);
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.12);
+}
+
+.champ.champErreur {
+  border-color: var(--couleur-erreur);
+}
+
+.champ.champErreur:focus {
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.12);
+}
+
+textarea.champ {
+  resize: vertical;
+  min-height: 80px;
+}
+
+select.champ {
+  cursor: pointer;
+  appearance: auto;
+}
+
+/* ─── Messages d'erreur ───────────────────────────────────────────────────── */
+.messageErreur {
+  font-size: 12px;
+  color: var(--couleur-erreur);
+  margin-top: 2px;
+}
+
+/* ─── Section occurrences ─────────────────────────────────────────────────── */
+.sectionOccurrences {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titreSectionOccurrences {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--foreground, #171717);
+  border-bottom: 1px solid var(--couleur-bordure);
+  padding-bottom: 8px;
+}
+
+/* ─── Carte occurrence ────────────────────────────────────────────────────── */
+.carteOccurrence {
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon);
+  padding: 18px 20px 20px;
+  background: var(--couleur-fond-carte);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.legendeOccurrence {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ─── Checkbox journée entière ────────────────────────────────────────────── */
+.ligneCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ligneCheckbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--couleur-accent);
+}
+
+.ligneCheckbox label {
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  color: var(--foreground, #171717);
+}
+
+/* ─── Ligne deux colonnes ─────────────────────────────────────────────────── */
+.ligneDeuxColonnes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .ligneDeuxColonnes {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Bouton supprimer occurrence ─────────────────────────────────────────── */
+.boutonSupprimer {
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  font-size: 13px;
+  color: #999;
+  cursor: pointer;
+  border-radius: var(--rayon-petit);
+  line-height: 1;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.boutonSupprimer:hover {
+  color: var(--couleur-erreur);
+  background: rgba(211, 47, 47, 0.07);
+}
+
+/* ─── Bouton ajouter occurrence ───────────────────────────────────────────── */
+.boutonAjouter {
+  align-self: flex-start;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--couleur-accent);
+  background: transparent;
+  border: 1px dashed var(--couleur-accent);
+  border-radius: var(--rayon-petit);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.boutonAjouter:hover {
+  background: rgba(0, 112, 243, 0.06);
+}
+
+/* ─── Zone téléchargement ─────────────────────────────────────────────────── */
+.zoneTelecharger {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.boutonTelecharger {
+  padding: 11px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #ffffff;
+  background: var(--couleur-accent);
+  border: none;
+  border-radius: var(--rayon);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.boutonTelecharger:hover {
+  background: var(--couleur-accent-hover);
+}
+
+.boutonTelecharger:active {
+  transform: scale(0.98);
+}
+
+.feedbackReussi {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--couleur-succes);
+  animation: apparaitre 0.2s ease;
+}
+
+@keyframes apparaitre {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Autocomplétion ──────────────────────────────────────────────────────── */
+.autocompleteConteneur {
+  position: relative;
+  width: 100%;
+}
+
+.suggestions {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-petit);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  z-index: 100;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.suggestion {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #171717;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background 0.1s ease;
+}
+
+.suggestion:hover {
+  background: rgba(0, 112, 243, 0.07);
+}
+
+/* ─── Attribution OSM ─────────────────────────────────────────────────────── */
+.attribution {
+  margin-top: 32px;
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+}
+
+.attribution a {
+  color: #555;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.attribution a:hover {
+  color: var(--couleur-accent);
+}
+
+/* ─── Mode sombre ─────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  .conteneur {
+    --couleur-bordure: #333;
+    --couleur-bordure-focus: #4d9fff;
+    --couleur-fond-carte: #111;
+    --couleur-fond-champ: #1a1a1a;
+  }
+
+  .sousTitre {
+    color: #999;
+  }
+
+  .legendeOccurrence {
+    color: #bbb;
+  }
+
+  .champ {
+    color: #ededed;
+    background: var(--couleur-fond-champ);
+  }
+
+  .suggestion {
+    background: #1a1a1a;
+    color: #ededed;
+  }
+
+  .suggestions {
+    background: #1a1a1a;
+    border-color: #333;
+  }
+
+  .suggestion:hover {
+    background: rgba(77, 159, 255, 0.12);
+  }
+
+  .attribution {
+    color: #666;
+  }
+
+  .attribution a {
+    color: #888;
+  }
+}
