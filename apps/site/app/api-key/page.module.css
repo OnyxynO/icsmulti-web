@@ -1,0 +1,242 @@
+/* ─── Variables locales (reprises de FormulaireICS.module.css) ─────────────── */
+.conteneur {
+  --couleur-accent: #0070f3;
+  --couleur-accent-hover: #005bb5;
+  --couleur-erreur: #d32f2f;
+  --couleur-succes: #2e7d32;
+  --couleur-avertissement-fond: #fff8e1;
+  --couleur-avertissement-bordure: #f9a825;
+  --couleur-avertissement-texte: #5d4037;
+  --couleur-bordure: #d0d0d0;
+  --couleur-bordure-focus: #0070f3;
+  --couleur-fond-carte: #f9f9f9;
+  --couleur-fond-champ: #ffffff;
+  --rayon: 8px;
+  --rayon-petit: 4px;
+
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+  font-family: var(--font-geist-sans, Arial, Helvetica, sans-serif);
+}
+
+/* ─── En-tête ─────────────────────────────────────────────────────────────── */
+.entete {
+  margin-bottom: 36px;
+  text-align: center;
+}
+
+.titre {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--foreground, #171717);
+  margin-bottom: 8px;
+}
+
+.sousTitre {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* ─── Section formulaire ──────────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+/* ─── Formulaire ──────────────────────────────────────────────────────────── */
+.formulaire {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ─── Groupes de champs ───────────────────────────────────────────────────── */
+.groupe {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.labelChamp {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground, #171717);
+}
+
+.optionnel {
+  font-size: 12px;
+  font-weight: 400;
+  color: #888;
+}
+
+/* ─── Champ de saisie ─────────────────────────────────────────────────────── */
+.champ {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-petit);
+  background: var(--couleur-fond-champ);
+  color: var(--foreground, #171717);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.champ:focus {
+  border-color: var(--couleur-bordure-focus);
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.12);
+}
+
+/* ─── Bouton générer ──────────────────────────────────────────────────────── */
+.boutonGenerer {
+  align-self: flex-start;
+  padding: 11px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #ffffff;
+  background: var(--couleur-accent);
+  border: none;
+  border-radius: var(--rayon);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.boutonGenerer:hover:not(:disabled) {
+  background: var(--couleur-accent-hover);
+}
+
+.boutonGenerer:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.boutonGenerer:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Avertissement clé générée ───────────────────────────────────────────── */
+.avertissement {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--couleur-avertissement-fond);
+  border: 1px solid var(--couleur-avertissement-bordure);
+  border-radius: var(--rayon);
+}
+
+.avertissementTitre {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--couleur-avertissement-texte);
+  margin: 0;
+}
+
+.cleGeneree {
+  display: block;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-family: var(--font-geist-mono, monospace);
+  background: #fff;
+  border: 1px solid var(--couleur-avertissement-bordure);
+  border-radius: var(--rayon-petit);
+  word-break: break-all;
+  color: #171717;
+  user-select: all; /* sélection en un clic */
+}
+
+/* ─── Erreur ──────────────────────────────────────────────────────────────── */
+.erreur {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--couleur-erreur);
+  background: rgba(211, 47, 47, 0.06);
+  border: 1px solid rgba(211, 47, 47, 0.25);
+  border-radius: var(--rayon-petit);
+}
+
+/* ─── Section informations d'utilisation ──────────────────────────────────── */
+.sectionInfo {
+  border-top: 1px solid var(--couleur-bordure);
+  padding-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.titreSectionInfo {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--foreground, #171717);
+  margin: 0;
+}
+
+.texteInfo {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.code {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.bloc {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 13px;
+  line-height: 1.7;
+  background: var(--couleur-fond-carte);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon);
+  padding: 16px 18px;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--foreground, #171717);
+  margin: 0;
+}
+
+/* ─── Mode sombre ─────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  .conteneur {
+    --couleur-bordure: #333;
+    --couleur-bordure-focus: #4d9fff;
+    --couleur-fond-carte: #111;
+    --couleur-fond-champ: #1a1a1a;
+    --couleur-avertissement-fond: #2a2200;
+    --couleur-avertissement-bordure: #b8860b;
+    --couleur-avertissement-texte: #f5d060;
+  }
+
+  .sousTitre,
+  .texteInfo {
+    color: #999;
+  }
+
+  .champ {
+    color: #ededed;
+    background: var(--couleur-fond-champ);
+  }
+
+  .cleGeneree {
+    background: #1a1a1a;
+    color: #ededed;
+  }
+
+  .code {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
