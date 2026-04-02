@@ -16,7 +16,10 @@ export interface OptionsExport {
 }
 /**
  * Génère un fichier .ics (RFC 5545) à partir d'un événement multi-occurrences.
- * Stub — implémentation complète à venir dans la phase 2.
+ *
+ * @param evenement - L'événement avec ses occurrences
+ * @param options   - Options d'export (fuseau horaire, etc.)
+ * @returns Le contenu du fichier ICS en UTF-8 avec CRLF
  */
-export declare function genererICS(_evenement: Evenement, _options?: OptionsExport): string;
+export declare function genererICS(evenement: Evenement, options?: OptionsExport): string;
 //# sourceMappingURL=index.d.ts.map
