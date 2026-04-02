@@ -183,8 +183,8 @@ describe("genererICS", () => {
   it("journée entière : DTSTART avec VALUE=DATE au format YYYYMMDD", () => {
     const occ: Occurrence = {
       id: "occ-jour",
-      dateDebut: new Date("2024-06-20"),
-      dateFin: new Date("2024-06-20"),
+      dateDebut: new Date(Date.UTC(2024, 5, 20)), // minuit UTC — date-only, pas d'ambiguïté timezone
+      dateFin: new Date(Date.UTC(2024, 5, 20)),
       lieu: "",
       touteLaJournee: true,
     };
@@ -201,8 +201,8 @@ describe("genererICS", () => {
   it("journée entière : DTEND = J+1", () => {
     const occ: Occurrence = {
       id: "occ-jour",
-      dateDebut: new Date("2024-06-20"),
-      dateFin: new Date("2024-06-20"),
+      dateDebut: new Date(Date.UTC(2024, 5, 20)), // minuit UTC
+      dateFin: new Date(Date.UTC(2024, 5, 20)),
       lieu: "",
       touteLaJournee: true,
     };
@@ -219,8 +219,8 @@ describe("genererICS", () => {
   it("journée entière : pas de TZID dans DTSTART/DTEND", () => {
     const occ: Occurrence = {
       id: "occ-jour",
-      dateDebut: new Date("2024-06-20"),
-      dateFin: new Date("2024-06-20"),
+      dateDebut: new Date(Date.UTC(2024, 5, 20)), // minuit UTC
+      dateFin: new Date(Date.UTC(2024, 5, 20)),
       lieu: "",
       touteLaJournee: true,
     };
@@ -388,5 +388,128 @@ describe("genererICS", () => {
     expect(dtstamp).toBeDefined();
     // Format attendu : DTSTAMP:YYYYMMDDTHHMMSSz
     expect(dtstamp).toMatch(/^DTSTAMP:\d{8}T\d{6}Z$/);
+  });
+
+  it("plusieurs occurrences partagent le même DTSTAMP (instant de génération commun)", () => {
+    const evenement: Evenement = {
+      titre: "Cohérence DTSTAMP",
+      notes: "",
+      occurrences: [
+        { ...occurrenceSimple, id: "occ-a" },
+        { ...occurrenceSimple, id: "occ-b" },
+      ],
+    };
+    const resultat = genererICS(evenement);
+    const lignes = depilerLignes(resultat);
+    const dtstamps = lignes.filter((l) => l.startsWith("DTSTAMP:"));
+    expect(dtstamps).toHaveLength(2);
+    expect(dtstamps[0]).toBe(dtstamps[1]);
+  });
+
+  // ── Propriétés VCALENDAR ──────────────────────────────────────────────────
+
+  it("VCALENDAR contient CALSCALE:GREGORIAN et METHOD:PUBLISH", () => {
+    const resultat = genererICS(evenementSimple);
+    expect(resultat).toContain("CALSCALE:GREGORIAN");
+    expect(resultat).toContain("METHOD:PUBLISH");
+  });
+
+  // ── Notes vides ───────────────────────────────────────────────────────────
+
+  it("notes vides : propriété DESCRIPTION absente", () => {
+    const evenement: Evenement = { ...evenementSimple, notes: "" };
+    const resultat = genererICS(evenement);
+    expect(resultat).not.toContain("DESCRIPTION:");
+  });
+
+  it("notes non vides : propriété DESCRIPTION présente", () => {
+    const evenement: Evenement = { ...evenementSimple, notes: "Prendre les slides" };
+    const resultat = genererICS(evenement);
+    const lignes = depilerLignes(resultat);
+    const desc = lignes.find((l) => l.startsWith("DESCRIPTION:"));
+    expect(desc).toBe("DESCRIPTION:Prendre les slides");
+  });
+
+  // ── VALARM — DESCRIPTION:Rappel ───────────────────────────────────────────
+
+  it("rappel : bloc VALARM contient DESCRIPTION:Rappel", () => {
+    const occ: Occurrence = { ...occurrenceSimple, rappelMinutes: 10 };
+    const resultat = genererICS({ ...evenementSimple, occurrences: [occ] });
+    const lignes = depilerLignes(resultat);
+    const descValarm = lignes.find((l) => l === "DESCRIPTION:Rappel");
+    expect(descValarm).toBeDefined();
+  });
+
+  it("rappel de 60 minutes : TRIGGER:-PT60M", () => {
+    const occ: Occurrence = { ...occurrenceSimple, rappelMinutes: 60 };
+    const resultat = genererICS({ ...evenementSimple, occurrences: [occ] });
+    expect(resultat).toContain("TRIGGER:-PT60M");
+  });
+
+  // ── Échappement dans le lieu ──────────────────────────────────────────────
+
+  it("échappe les virgules dans le lieu", () => {
+    const occ: Occurrence = { ...occurrenceSimple, lieu: "Salle A, Bâtiment B" };
+    const resultat = genererICS({ ...evenementSimple, occurrences: [occ] });
+    const lignes = depilerLignes(resultat);
+    const location = lignes.find((l) => l.startsWith("LOCATION:"));
+    expect(location).toBe("LOCATION:Salle A\\, Bâtiment B");
+  });
+
+  // ── Line folding — caractères multi-octets ────────────────────────────────
+
+  it("replie correctement une ligne avec des caractères UTF-8 multi-octets (accents)", () => {
+    // "é" = 2 octets — vérifier que le repli ne coupe pas au milieu d'un caractère
+    const titreAccents = "Réunion générale — ".repeat(5); // > 75 octets, plein d'accents
+    const evenement: Evenement = { titre: titreAccents, notes: "", occurrences: [occurrenceSimple] };
+    const resultat = genererICS(evenement);
+
+    // Toutes les lignes physiques ≤ 75 octets
+    const encoder = new TextEncoder();
+    const lignes = resultat.split("\r\n").filter((l) => l.length > 0);
+    const lignesTropLongues = lignes.filter((l) => encoder.encode(l).length > 75);
+    expect(lignesTropLongues).toHaveLength(0);
+
+    // Le titre déplié est intègre (aucun caractère corrompu)
+    const lignesDeplies = depilerLignes(resultat);
+    const summary = lignesDeplies.find((l) => l.startsWith("SUMMARY:"));
+    expect(summary).toBe(`SUMMARY:${titreAccents}`);
+  });
+
+  // ── Journée entière multi-jours ───────────────────────────────────────────
+
+  it("journée entière multi-jours : DTEND = dateFin + 1 jour", () => {
+    const occ: Occurrence = {
+      id: "occ-multi",
+      dateDebut: new Date(Date.UTC(2024, 5, 20)), // minuit UTC
+      dateFin: new Date(Date.UTC(2024, 5, 22)), // 3 jours — DTEND attendu = 20240623
+      lieu: "",
+      touteLaJournee: true,
+    };
+    const resultat = genererICS({ titre: "Vacances", notes: "", occurrences: [occ] });
+    const lignes = depilerLignes(resultat);
+    const dtend = lignes.find((l) => l.startsWith("DTEND;VALUE=DATE:"));
+    expect(dtend).toBe("DTEND;VALUE=DATE:20240623");
+  });
+
+  // ── Fuseau UTC ────────────────────────────────────────────────────────────
+
+  it("fuseau 'UTC' valide : pas d'erreur levée", () => {
+    expect(() => genererICS(evenementSimple, { fuseau: "UTC" })).not.toThrow();
+  });
+
+  it("fuseau UTC : DTSTART sans décalage (même heure que l'instant UTC)", () => {
+    const occ: Occurrence = {
+      id: "occ-utc",
+      dateDebut: new Date("2024-06-15T14:30:00Z"),
+      dateFin: new Date("2024-06-15T15:00:00Z"),
+      lieu: "",
+      touteLaJournee: false,
+    };
+    const resultat = genererICS({ titre: "Test UTC", notes: "", occurrences: [occ] }, { fuseau: "UTC" });
+    const lignes = depilerLignes(resultat);
+    const dtstart = lignes.find((l) => l.startsWith("DTSTART;TZID=UTC:"));
+    expect(dtstart).toBeDefined();
+    expect(dtstart).toContain("T143000");
   });
 });

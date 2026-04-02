@@ -207,4 +207,98 @@ describe("POST /api/generate", () => {
       1,
     );
   });
+
+  // ── 400 — dateFin invalide ────────────────────────────────────────────────
+
+  it("retourne 400 si une occurrence contient une dateFin invalide", async () => {
+    const { POST } = await import("./route");
+    const req = creerRequete(
+      {
+        evenement: {
+          ...evenementValide,
+          occurrences: [
+            { ...evenementValide.occurrences[0], dateFin: "pas-une-date" },
+          ],
+        },
+      },
+      "ma-cle",
+    );
+    const res = await POST(req);
+
+    expect(res.status).toBe(400);
+    const corps = await res.json();
+    expect(corps.error).toMatch(/dateFin/i);
+  });
+
+  // ── 400 — champ evenement absent ─────────────────────────────────────────
+
+  it("retourne 400 si le corps ne contient pas le champ evenement", async () => {
+    const { POST } = await import("./route");
+    const req = creerRequete({}, "ma-cle");
+    const res = await POST(req);
+
+    expect(res.status).toBe(400);
+    const corps = await res.json();
+    expect(corps.error).toMatch(/titre/i);
+  });
+
+  // ── 400 — fuseau invalide dans options ────────────────────────────────────
+
+  it("retourne 400 si options.fuseau est un identifiant invalide (genererICS lève une Error)", async () => {
+    // On configure le mock pour simuler ce que genererICS ferait avec un fuseau invalide
+    mockGenererICS.mockImplementationOnce(() => {
+      throw new Error('Fuseau horaire invalide : "UTC+2". Utiliser un identifiant IANA comme "Europe/Paris".');
+    });
+    const { POST } = await import("./route");
+    const req = creerRequete(
+      { evenement: evenementValide, options: { fuseau: "UTC+2" } },
+      "ma-cle",
+    );
+    const res = await POST(req);
+
+    expect(res.status).toBe(400);
+    const corps = await res.json();
+    expect(corps.error).toMatch(/fuseau/i);
+  });
+
+  // ── 200 — nom de fichier dans Content-Disposition ─────────────────────────
+
+  it("le nom de fichier dans Content-Disposition est basé sur le titre de l'événement", async () => {
+    const { POST } = await import("./route");
+    // Titre ASCII simple pour un résultat prévisible sans ambiguïté d'encodage
+    const req = creerRequete({ evenement: { ...evenementValide, titre: "Mon Evenement Test" } }, "ma-cle");
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    // Les espaces sont remplacés par "_" — résultat attendu : Mon_Evenement_Test.ics
+    expect(res.headers.get("Content-Disposition")).toContain("Mon_Evenement_Test.ics");
+  });
+
+  // ── 200 — options fuseau valide transmis à genererICS ────────────────────
+
+  it("transmet les options (fuseau) à genererICS quand elles sont présentes", async () => {
+    const { POST } = await import("./route");
+    const req = creerRequete(
+      { evenement: evenementValide, options: { fuseau: "America/New_York" } },
+      "ma-cle",
+    );
+    await POST(req);
+
+    // genererICS doit avoir été appelé avec les options contenant le fuseau
+    expect(mockGenererICS).toHaveBeenCalledWith(
+      expect.objectContaining({ titre: evenementValide.titre }),
+      expect.objectContaining({ fuseau: "America/New_York" }),
+    );
+  });
+
+  // ── 200 — compteur non incrémenté en cas d'erreur ─────────────────────────
+
+  it("n'incrémente pas le compteur si genererICS lève une erreur", async () => {
+    mockGenererICS.mockImplementationOnce(() => { throw new Error("Fuseau horaire invalide"); });
+    const { POST } = await import("./route");
+    const req = creerRequete({ evenement: evenementValide, options: { fuseau: "UTC+2" } }, "ma-cle");
+    await POST(req);
+
+    expect(mockHincrby).not.toHaveBeenCalled();
+  });
 });
