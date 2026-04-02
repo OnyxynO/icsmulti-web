@@ -32,8 +32,14 @@
     "endpoint_titre": "Endpoint",
     "auth_titre": "Authentication",
     "auth_desc": "Add your API key in the X-API-Key header:",
-    "exemple_titre": "Request example",
-    "cle_api_lien": "Get an API key →"
+    "cle_api_lien": "Get an API key →",
+    "schema_titre": "Request body",
+    "schema_obligatoire": "required",
+    "schema_optionnel": "optional",
+    "reponse_titre": "Response",
+    "reponse_succes": "Success — 200",
+    "reponse_erreurs": "Error codes",
+    "exemple_titre": "Request example"
   },
   "widget_page": {
     "titre": "Embeddable Widget",
