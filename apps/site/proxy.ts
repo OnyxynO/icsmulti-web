@@ -12,5 +12,5 @@ export const config = {
 	// Appliquer le proxy à toutes les routes sauf :
 	// - /api/*, /_next/*, /_vercel/*
 	// - les fichiers avec extension (favicon.ico, images…)
-	matcher: "/((?!api|_next|_vercel|.*\\..*).*)",
+	matcher: "/((?!api/|_next|_vercel|.*\\..*).*)",
 };
