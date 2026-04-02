@@ -28,11 +28,10 @@ icsmulti-web/
 |---|---|
 | Next.js 16.2 + React 19 | `apps/site` |
 | Biome 2.x | lint + format — `npm run check` depuis la racine |
-| Vitest | tests `packages/core` |
+| Vitest | tests `packages/core` (40 tests) + `apps/site` (15 tests) |
 | Vite (lib mode IIFE) | build `packages/widget` |
-| next-intl | i18n FR + EN (à intégrer en phase 5) |
-| Upstash KV | stockage clés API (à intégrer en phase 4) |
-| Vercel Analytics | événements custom export/usage |
+| next-intl 4.9 | i18n FR + EN — fr sans préfixe, en avec /en |
+| Upstash KV | stockage clés API |
 
 ## Ordre de build
 
@@ -48,8 +47,11 @@ Toujours builder `core` en premier — `site` et `widget` en dépendent.
 - [x] **Phase 2** — `packages/core` : portage TypeScript de `ICSGenerator.swift` + tests Vitest
 - [x] **Phase 3** — Module web : formulaire Next.js + Nominatim + export client
 - [x] **Phase 4** — Module API : `POST /api/generate` + clés API (Upstash KV) + page `/api-key`
-- [ ] **Phase 5** — Site landing : i18n next-intl + pages `/app`, `/api-docs`, `/widget`, `/desktop`
-- [ ] **Phase 6** — Module widget : bundle Vite IIFE → `apps/site/public/widget.js`
+- [x] **Phase 5** — Site landing : i18n next-intl + pages `/app`, `/api-docs`, `/widget`, `/desktop`
+- [x] **Phase 6** — Module widget : bundle Vite IIFE → `apps/site/public/widget.js`
+- [x] **Tests** — 55 tests Vitest (40 core RFC 5545 + 15 route handler POST /api/generate)
+- [x] **Démo live** — DemoWidget Client Component sur /widget (next/script + ICSMulti.init())
+- [x] **Doc API** — /api-docs : schéma complet, codes d'erreur, curl corrigé
 
 ## Contraintes RFC 5545 (core)
 
@@ -74,6 +76,7 @@ Toujours builder `core` en premier — `site` et `widget` en dépendent.
 ## Pièges connus
 
 - `packages/core` doit être buildé avant `apps/site` — sinon erreur d'import
-- Le champ `exports` dans `package.json` est obligatoire pour que TypeScript trouve les types (leçon pi-mono)
+- Le champ `exports` dans `package.json` est obligatoire pour que TypeScript trouve les types
 - Next.js 16 : toutes les APIs request sont async — `await cookies()`, `await headers()`, `await params`
 - Widget : CSS scopé avec préfixe `icsmulti-` pour éviter les collisions dans les sites hôtes
+- **Matcher proxy.ts** : utiliser `api/` (avec slash) et non `api` dans le lookahead négatif — sinon toutes les pages dont le nom commence par "api" (ex: `/api-docs`, `/api-key`) sont exclues du middleware i18n et tombent en 404
