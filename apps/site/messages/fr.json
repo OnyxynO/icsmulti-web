@@ -38,6 +38,7 @@
   "widget_page": {
     "titre": "Widget embarquable",
     "sous_titre": "Intégrez le générateur ICS sur n'importe quel site en 3 lignes.",
+    "demo_titre": "Démo live",
     "etape1_titre": "1. Ajoutez le conteneur",
     "etape2_titre": "2. Chargez le script",
     "etape3_titre": "3. Initialisez",

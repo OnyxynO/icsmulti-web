@@ -38,6 +38,7 @@
   "widget_page": {
     "titre": "Embeddable Widget",
     "sous_titre": "Embed the ICS generator on any website in 3 lines.",
+    "demo_titre": "Live demo",
     "etape1_titre": "1. Add the container",
     "etape2_titre": "2. Load the script",
     "etape3_titre": "3. Initialize",

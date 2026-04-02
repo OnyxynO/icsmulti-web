@@ -1,13 +1,16 @@
-// Page /widget — documentation du widget embarquable ICSMulti.
+// Page /widget — documentation + démo live du widget embarquable ICSMulti.
 // Server Component statique.
 
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
+import DemoWidget from "./DemoWidget";
 import styles from "./page.module.css";
 
 export default async function PageWidget() {
 	const t = await getTranslations("widget_page");
+	const locale = await getLocale();
+	const lang = locale === "en" ? "en" : "fr";
 
 	return (
 		<div className={styles.page}>
@@ -17,6 +20,14 @@ export default async function PageWidget() {
 					<h1 className={styles.titre}>{t("titre")}</h1>
 					<p className={styles.sousTitre}>{t("sous_titre")}</p>
 				</header>
+
+				{/* ── Démo live ── */}
+				<section className={styles.section}>
+					<h2 className={styles.titreSec}>{t("demo_titre")}</h2>
+					<div className={styles.conteneurDemo}>
+						<DemoWidget lang={lang} />
+					</div>
+				</section>
 
 				{/* ── Étape 1 : conteneur ── */}
 				<section className={styles.section}>
