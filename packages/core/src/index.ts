@@ -2,6 +2,8 @@
 
 export interface Occurrence {
   id: string;
+  titre: string;
+  notes: string;
   dateDebut: Date;
   dateFin: Date;
   lieu: string;
@@ -10,8 +12,6 @@ export interface Occurrence {
 }
 
 export interface Evenement {
-  titre: string;
-  notes: string;
   occurrences: Occurrence[];
 }
 
@@ -159,7 +159,7 @@ function genererValarm(rappelMinutes: number): string {
 /**
  * Génère un bloc VEVENT complet pour une occurrence donnée.
  */
-function genererVevent(occurrence: Occurrence, evenement: Evenement, fuseau: string, maintenant: Date): string {
+function genererVevent(occurrence: Occurrence, fuseau: string, maintenant: Date): string {
   let bloc = "";
   bloc += `BEGIN:VEVENT${CRLF}`;
 
@@ -184,10 +184,10 @@ function genererVevent(occurrence: Occurrence, evenement: Evenement, fuseau: str
     bloc += propriete(`DTEND;TZID=${fuseau}`, formaterDateHeure(occurrence.dateFin, fuseau));
   }
 
-  // Titre et notes — échappement obligatoire
-  bloc += propriete("SUMMARY", echapper(evenement.titre));
-  if (evenement.notes.length > 0) {
-    bloc += propriete("DESCRIPTION", echapper(evenement.notes));
+  // Titre et notes propres à chaque occurrence — échappement obligatoire
+  bloc += propriete("SUMMARY", echapper(occurrence.titre));
+  if (occurrence.notes.length > 0) {
+    bloc += propriete("DESCRIPTION", echapper(occurrence.notes));
   }
 
   // Lieu — omis si vide
@@ -237,7 +237,7 @@ export function genererICS(evenement: Evenement, options?: OptionsExport): strin
   contenu += propriete("METHOD", "PUBLISH");
 
   for (const occurrence of evenement.occurrences) {
-    contenu += genererVevent(occurrence, evenement, fuseau, maintenant);
+    contenu += genererVevent(occurrence, fuseau, maintenant);
   }
 
   contenu += `END:VCALENDAR${CRLF}`;

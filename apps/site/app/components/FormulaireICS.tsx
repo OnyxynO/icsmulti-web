@@ -13,9 +13,11 @@ interface SuggestionNominatim {
   display_name: string;
 }
 
-/** Occurrence dans l'état du formulaire — les dates sont des strings (inputs HTML) */
-interface OccurrenceFormulaire {
+/** Événement dans l'état du formulaire — les dates sont des strings (inputs HTML) */
+interface EvenementFormulaire {
   id: string;
+  titre: string;
+  notes: string;
   dateDebut: string; // "2024-06-20T14:00"
   dateFin: string; // "2024-06-20T16:00"
   lieu: string;
@@ -25,9 +27,9 @@ interface OccurrenceFormulaire {
 
 // ─── Utilitaires ──────────────────────────────────────────────────────────────
 
-/** Génère un identifiant unique simple pour les occurrences côté formulaire */
-function genererIdOccurrence(): string {
-  return `occ-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+/** Génère un identifiant unique simple */
+function genererIdEvenement(): string {
+  return `evt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
 /** Slugifie une chaîne pour en faire un nom de fichier sûr */
@@ -49,8 +51,8 @@ function formaterDateTimeLocal(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-/** Occurrence formulaire vide avec des valeurs par défaut raisonnables */
-function occurrenceVide(): OccurrenceFormulaire {
+/** Événement formulaire vide avec des valeurs par défaut raisonnables */
+function evenementVide(): EvenementFormulaire {
   const maintenant = new Date();
   // Arrondir à l'heure suivante
   maintenant.setMinutes(0, 0, 0);
@@ -62,7 +64,9 @@ function occurrenceVide(): OccurrenceFormulaire {
   const finStr = formaterDateTimeLocal(fin);
 
   return {
-    id: genererIdOccurrence(),
+    id: genererIdEvenement(),
+    titre: "",
+    notes: "",
     dateDebut: debut,
     dateFin: finStr,
     lieu: "",
@@ -171,30 +175,30 @@ function AutocompletionLieu({ valeur, onChange, id, placeholder }: Autocompletio
   );
 }
 
-// ─── Composant occurrence ─────────────────────────────────────────────────────
+// ─── Composant carte événement ────────────────────────────────────────────────
 
-interface CartOccurrenceProps {
-  occurrence: OccurrenceFormulaire;
+interface CarteEvenementProps {
+  evenement: EvenementFormulaire;
   index: number;
   peutSupprimer: boolean;
-  onChange: (id: string, champ: keyof OccurrenceFormulaire, valeur: string | boolean) => void;
+  onChange: (id: string, champ: keyof EvenementFormulaire, valeur: string | boolean) => void;
   onSupprimer: (id: string) => void;
-  erreurs: Partial<Record<keyof OccurrenceFormulaire, string>>;
+  erreurs: Partial<Record<keyof EvenementFormulaire, string>>;
   t: ReturnType<typeof useTranslations<"formulaire">>;
   optionsRappel: { valeur: string; libelle: string }[];
 }
 
-function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprimer, erreurs, t, optionsRappel }: CartOccurrenceProps) {
-  const prefixId = `occ-${occurrence.id}`;
+function CarteEvenement({ evenement, index, peutSupprimer, onChange, onSupprimer, erreurs, t, optionsRappel }: CarteEvenementProps) {
+  const prefixId = `evt-${evenement.id}`;
 
   return (
     <fieldset className={styles.carteOccurrence}>
       <legend className={styles.legendeOccurrence}>
-        {t("occurrence_numero", { num: index + 1 })}
+        {t("evenement_numero", { num: index + 1 })}
         {peutSupprimer && (
           <button
             type="button"
-            onClick={() => onSupprimer(occurrence.id)}
+            onClick={() => onSupprimer(evenement.id)}
             className={styles.boutonSupprimer}
             aria-label={t("supprimer_label", { num: index + 1 })}
           >
@@ -203,13 +207,45 @@ function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprim
         )}
       </legend>
 
+      {/* Titre */}
+      <div className={styles.groupe}>
+        <label htmlFor={`${prefixId}-titre`}>
+          {t("titre_label")} <span className={styles.obligatoire}>*</span>
+        </label>
+        <input
+          id={`${prefixId}-titre`}
+          type="text"
+          value={evenement.titre}
+          onChange={(e) => onChange(evenement.id, "titre", e.target.value)}
+          placeholder={t("titre_placeholder")}
+          className={`${styles.champ} ${erreurs.titre ? styles.champErreur : ""}`}
+          aria-describedby={erreurs.titre ? `erreur-${prefixId}-titre` : undefined}
+          aria-invalid={!!erreurs.titre}
+          required
+        />
+        {erreurs.titre && <span id={`erreur-${prefixId}-titre`} className={styles.messageErreur}>{erreurs.titre}</span>}
+      </div>
+
+      {/* Notes */}
+      <div className={styles.groupe}>
+        <label htmlFor={`${prefixId}-notes`}>{t("notes_label")}</label>
+        <textarea
+          id={`${prefixId}-notes`}
+          value={evenement.notes}
+          onChange={(e) => onChange(evenement.id, "notes", e.target.value)}
+          placeholder={t("notes_placeholder")}
+          rows={2}
+          className={styles.champ}
+        />
+      </div>
+
       {/* Journée entière */}
       <div className={styles.ligneCheckbox}>
         <input
           id={`${prefixId}-journee`}
           type="checkbox"
-          checked={occurrence.touteLaJournee}
-          onChange={(e) => onChange(occurrence.id, "touteLaJournee", e.target.checked)}
+          checked={evenement.touteLaJournee}
+          onChange={(e) => onChange(evenement.id, "touteLaJournee", e.target.checked)}
         />
         <label htmlFor={`${prefixId}-journee`}>{t("journee_entiere")}</label>
       </div>
@@ -218,13 +254,13 @@ function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprim
       <div className={styles.ligneDeuxColonnes}>
         <div className={styles.groupe}>
           <label htmlFor={`${prefixId}-debut`}>
-            {occurrence.touteLaJournee ? t("date_debut") : t("heure_debut")} <span className={styles.obligatoire}>*</span>
+            {evenement.touteLaJournee ? t("date_debut") : t("heure_debut")} <span className={styles.obligatoire}>*</span>
           </label>
           <input
             id={`${prefixId}-debut`}
-            type={occurrence.touteLaJournee ? "date" : "datetime-local"}
-            value={occurrence.touteLaJournee ? occurrence.dateDebut.slice(0, 10) : occurrence.dateDebut}
-            onChange={(e) => onChange(occurrence.id, "dateDebut", e.target.value)}
+            type={evenement.touteLaJournee ? "date" : "datetime-local"}
+            value={evenement.touteLaJournee ? evenement.dateDebut.slice(0, 10) : evenement.dateDebut}
+            onChange={(e) => onChange(evenement.id, "dateDebut", e.target.value)}
             className={`${styles.champ} ${erreurs.dateDebut ? styles.champErreur : ""}`}
             aria-describedby={erreurs.dateDebut ? `erreur-${prefixId}-debut` : undefined}
             aria-invalid={!!erreurs.dateDebut}
@@ -235,13 +271,13 @@ function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprim
 
         <div className={styles.groupe}>
           <label htmlFor={`${prefixId}-fin`}>
-            {occurrence.touteLaJournee ? t("date_fin") : t("heure_fin")} <span className={styles.obligatoire}>*</span>
+            {evenement.touteLaJournee ? t("date_fin") : t("heure_fin")} <span className={styles.obligatoire}>*</span>
           </label>
           <input
             id={`${prefixId}-fin`}
-            type={occurrence.touteLaJournee ? "date" : "datetime-local"}
-            value={occurrence.touteLaJournee ? occurrence.dateFin.slice(0, 10) : occurrence.dateFin}
-            onChange={(e) => onChange(occurrence.id, "dateFin", e.target.value)}
+            type={evenement.touteLaJournee ? "date" : "datetime-local"}
+            value={evenement.touteLaJournee ? evenement.dateFin.slice(0, 10) : evenement.dateFin}
+            onChange={(e) => onChange(evenement.id, "dateFin", e.target.value)}
             className={`${styles.champ} ${erreurs.dateFin ? styles.champErreur : ""}`}
             aria-describedby={erreurs.dateFin ? `erreur-${prefixId}-fin` : undefined}
             aria-invalid={!!erreurs.dateFin}
@@ -256,8 +292,8 @@ function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprim
         <label htmlFor={`${prefixId}-lieu`}>{t("lieu_label")}</label>
         <AutocompletionLieu
           id={`${prefixId}-lieu`}
-          valeur={occurrence.lieu}
-          onChange={(v) => onChange(occurrence.id, "lieu", v)}
+          valeur={evenement.lieu}
+          onChange={(v) => onChange(evenement.id, "lieu", v)}
           placeholder={t("lieu_placeholder")}
         />
       </div>
@@ -267,8 +303,8 @@ function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprim
         <label htmlFor={`${prefixId}-rappel`}>{t("rappel_label")}</label>
         <select
           id={`${prefixId}-rappel`}
-          value={occurrence.rappelMinutes}
-          onChange={(e) => onChange(occurrence.id, "rappelMinutes", e.target.value)}
+          value={evenement.rappelMinutes}
+          onChange={(e) => onChange(evenement.id, "rappelMinutes", e.target.value)}
           className={styles.champ}
         >
           {optionsRappel.map((opt) => (
@@ -285,20 +321,15 @@ function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprim
 // ─── Types erreurs formulaire ─────────────────────────────────────────────────
 
 interface ErreursFormulaire {
-  titre?: string;
-  occurrences: Record<string, Partial<Record<keyof OccurrenceFormulaire, string>>>;
+  evenements: Record<string, Partial<Record<keyof EvenementFormulaire, string>>>;
 }
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export default function FormulaireICS() {
   const t = useTranslations("formulaire");
-  const [titre, setTitre] = useState("");
-  const [notes, setNotes] = useState("");
-  const [occurrences, setOccurrences] = useState<OccurrenceFormulaire[]>([occurrenceVide()]);
-  const [erreurs, setErreurs] = useState<ErreursFormulaire>({
-    occurrences: {},
-  });
+  const [evenements, setEvenements] = useState<EvenementFormulaire[]>([evenementVide()]);
+  const [erreurs, setErreurs] = useState<ErreursFormulaire>({ evenements: {} });
   const [exportReussi, setExportReussi] = useState(false);
   const tacheDisparitionRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -319,41 +350,41 @@ export default function FormulaireICS() {
     };
   }, []);
 
-  // ─── Gestion des occurrences ────────────────────────────────────────────────
+  // ─── Gestion des événements ──────────────────────────────────────────────
 
-  const ajouterOccurrence = () => {
-    setOccurrences((prev) => [...prev, occurrenceVide()]);
+  const ajouterEvenement = () => {
+    setEvenements((prev) => [...prev, evenementVide()]);
   };
 
-  const supprimerOccurrence = (id: string) => {
-    setOccurrences((prev) => prev.filter((o) => o.id !== id));
+  const supprimerEvenement = (id: string) => {
+    setEvenements((prev) => prev.filter((e) => e.id !== id));
   };
 
-  const modifierOccurrence = (id: string, champ: keyof OccurrenceFormulaire, valeur: string | boolean) => {
-    setOccurrences((prev) =>
-      prev.map((o) => {
-        if (o.id !== id) return o;
+  const modifierEvenement = (id: string, champ: keyof EvenementFormulaire, valeur: string | boolean) => {
+    setEvenements((prev) =>
+      prev.map((e) => {
+        if (e.id !== id) return e;
 
-        const nvOcc = { ...o, [champ]: valeur };
+        const nvEvt = { ...e, [champ]: valeur };
 
         // Quand on bascule "journée entière", adapter les valeurs de date
         if (champ === "touteLaJournee") {
           if (valeur === true) {
             // datetime-local → date seule (conserver les 10 premiers caractères)
-            nvOcc.dateDebut = o.dateDebut.slice(0, 10);
-            nvOcc.dateFin = o.dateFin.slice(0, 10);
+            nvEvt.dateDebut = e.dateDebut.slice(0, 10);
+            nvEvt.dateFin = e.dateFin.slice(0, 10);
           } else {
             // date seule → datetime-local : ajouter T00:00 si besoin
-            if (nvOcc.dateDebut.length === 10) {
-              nvOcc.dateDebut = `${nvOcc.dateDebut}T00:00`;
+            if (nvEvt.dateDebut.length === 10) {
+              nvEvt.dateDebut = `${nvEvt.dateDebut}T00:00`;
             }
-            if (nvOcc.dateFin.length === 10) {
-              nvOcc.dateFin = `${nvOcc.dateFin}T01:00`;
+            if (nvEvt.dateFin.length === 10) {
+              nvEvt.dateFin = `${nvEvt.dateFin}T01:00`;
             }
           }
         }
 
-        return nvOcc;
+        return nvEvt;
       }),
     );
   };
@@ -361,37 +392,37 @@ export default function FormulaireICS() {
   // ─── Validation ─────────────────────────────────────────────────────────────
 
   const valider = (): ErreursFormulaire | null => {
-    const nvErreurs: ErreursFormulaire = { occurrences: {} };
+    const nvErreurs: ErreursFormulaire = { evenements: {} };
     let valide = true;
 
-    if (!titre.trim()) {
-      nvErreurs.titre = t("titre_erreur");
-      valide = false;
-    }
+    for (const evt of evenements) {
+      const erreursEvt: Partial<Record<keyof EvenementFormulaire, string>> = {};
 
-    for (const occ of occurrences) {
-      const erreursOcc: Partial<Record<keyof OccurrenceFormulaire, string>> = {};
-
-      if (!occ.dateDebut) {
-        erreursOcc.dateDebut = t("erreur_debut_obligatoire");
-        valide = false;
-      }
-      if (!occ.dateFin) {
-        erreursOcc.dateFin = t("erreur_fin_obligatoire");
+      if (!evt.titre.trim()) {
+        erreursEvt.titre = t("titre_erreur");
         valide = false;
       }
 
-      if (occ.dateDebut && occ.dateFin) {
-        const debut = new Date(occ.dateDebut);
-        const fin = new Date(occ.dateFin);
+      if (!evt.dateDebut) {
+        erreursEvt.dateDebut = t("erreur_debut_obligatoire");
+        valide = false;
+      }
+      if (!evt.dateFin) {
+        erreursEvt.dateFin = t("erreur_fin_obligatoire");
+        valide = false;
+      }
+
+      if (evt.dateDebut && evt.dateFin) {
+        const debut = new Date(evt.dateDebut);
+        const fin = new Date(evt.dateFin);
         if (fin < debut) {
-          erreursOcc.dateFin = t("erreur_fin_avant_debut");
+          erreursEvt.dateFin = t("erreur_fin_avant_debut");
           valide = false;
         }
       }
 
-      if (Object.keys(erreursOcc).length > 0) {
-        nvErreurs.occurrences[occ.id] = erreursOcc;
+      if (Object.keys(erreursEvt).length > 0) {
+        nvErreurs.evenements[evt.id] = erreursEvt;
       }
     }
 
@@ -406,20 +437,20 @@ export default function FormulaireICS() {
       setErreurs(erreursValidation);
       return;
     }
-    setErreurs({ occurrences: {} });
+    setErreurs({ evenements: {} });
 
     // Construire l'objet Evenement pour @icsmulti/core
     const evenement: Evenement = {
-      titre: titre.trim(),
-      notes: notes.trim(),
-      occurrences: occurrences.map(
-        (occ): Occurrence => ({
-          id: occ.id,
-          dateDebut: new Date(occ.dateDebut),
-          dateFin: new Date(occ.dateFin),
-          lieu: occ.lieu.trim(),
-          touteLaJournee: occ.touteLaJournee,
-          rappelMinutes: occ.rappelMinutes ? Number(occ.rappelMinutes) : undefined,
+      occurrences: evenements.map(
+        (evt): Occurrence => ({
+          id: evt.id,
+          titre: evt.titre.trim(),
+          notes: evt.notes.trim(),
+          dateDebut: new Date(evt.dateDebut),
+          dateFin: new Date(evt.dateFin),
+          lieu: evt.lieu.trim(),
+          touteLaJournee: evt.touteLaJournee,
+          rappelMinutes: evt.rappelMinutes ? Number(evt.rappelMinutes) : undefined,
         }),
       ),
     };
@@ -427,12 +458,15 @@ export default function FormulaireICS() {
     // Générer le contenu ICS via @icsmulti/core
     const contenuICS = genererICS(evenement);
 
+    // Nom de fichier basé sur le titre du premier événement
+    const nomFichier = `${slugifier(evenements[0].titre || "export")}.ics`;
+
     // Créer un Blob et déclencher le téléchargement
     const blob = new Blob([contenuICS], { type: "text/calendar;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const lien = document.createElement("a");
     lien.href = url;
-    lien.download = `${slugifier(titre)}.ics`;
+    lien.download = nomFichier;
     document.body.appendChild(lien);
     lien.click();
     document.body.removeChild(lien);
@@ -456,58 +490,24 @@ export default function FormulaireICS() {
         }}
         noValidate
       >
-        {/* Titre */}
-        <div className={styles.groupe}>
-          <label htmlFor="titre-evenement">
-            {t("titre_label")} <span className={styles.obligatoire}>*</span>
-          </label>
-          <input
-            id="titre-evenement"
-            type="text"
-            value={titre}
-            onChange={(e) => setTitre(e.target.value)}
-            placeholder={t("titre_placeholder")}
-            className={`${styles.champ} ${erreurs.titre ? styles.champErreur : ""}`}
-            aria-describedby={erreurs.titre ? "erreur-titre-evenement" : undefined}
-            aria-invalid={!!erreurs.titre}
-            required
-          />
-          {erreurs.titre && <span id="erreur-titre-evenement" className={styles.messageErreur}>{erreurs.titre}</span>}
-        </div>
-
-        {/* Notes */}
-        <div className={styles.groupe}>
-          <label htmlFor="notes-evenement">{t("notes_label")}</label>
-          <textarea
-            id="notes-evenement"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder={t("notes_placeholder")}
-            rows={3}
-            className={styles.champ}
-          />
-        </div>
-
-        {/* Occurrences */}
+        {/* Événements */}
         <div className={styles.sectionOccurrences}>
-          <h2 className={styles.titreSectionOccurrences}>{t("section_occurrences")}</h2>
-
-          {occurrences.map((occ, index) => (
-            <CarteOccurrence
-              key={occ.id}
-              occurrence={occ}
+          {evenements.map((evt, index) => (
+            <CarteEvenement
+              key={evt.id}
+              evenement={evt}
               index={index}
-              peutSupprimer={occurrences.length > 1}
-              onChange={modifierOccurrence}
-              onSupprimer={supprimerOccurrence}
-              erreurs={erreurs.occurrences[occ.id] ?? {}}
+              peutSupprimer={evenements.length > 1}
+              onChange={modifierEvenement}
+              onSupprimer={supprimerEvenement}
+              erreurs={erreurs.evenements[evt.id] ?? {}}
               t={t}
               optionsRappel={optionsRappel}
             />
           ))}
 
-          <button type="button" onClick={ajouterOccurrence} className={styles.boutonAjouter}>
-            {t("ajouter_occurrence")}
+          <button type="button" onClick={ajouterEvenement} className={styles.boutonAjouter}>
+            {t("ajouter_evenement")}
           </button>
         </div>
 

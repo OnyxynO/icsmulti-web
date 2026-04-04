@@ -5,6 +5,8 @@ import { type Evenement, genererICS, type Occurrence } from "./index.js";
 
 const occurrenceSimple: Occurrence = {
   id: "occ-1",
+  titre: "Réunion d'équipe",
+  notes: "Ordre du jour à définir",
   dateDebut: new Date("2024-06-15T10:00:00Z"),
   dateFin: new Date("2024-06-15T11:00:00Z"),
   lieu: "Paris",
@@ -12,8 +14,6 @@ const occurrenceSimple: Occurrence = {
 };
 
 const evenementSimple: Evenement = {
-  titre: "Réunion d'équipe",
-  notes: "Ordre du jour à définir",
   occurrences: [occurrenceSimple],
 };
 
@@ -54,8 +54,6 @@ describe("genererICS", () => {
 
   it("génère autant de VEVENT que d'occurrences", () => {
     const evenement: Evenement = {
-      titre: "Multi",
-      notes: "",
       occurrences: [
         { ...occurrenceSimple, id: "occ-a" },
         { ...occurrenceSimple, id: "occ-b" },
@@ -68,9 +66,33 @@ describe("genererICS", () => {
   });
 
   it("retourne une chaîne vide de VEVENT si aucune occurrence", () => {
-    const resultat = genererICS({ titre: "Vide", notes: "", occurrences: [] });
+    const resultat = genererICS({ occurrences: [] });
     expect(resultat).toContain("BEGIN:VCALENDAR");
     expect(resultat).not.toContain("BEGIN:VEVENT");
+  });
+
+  it("chaque occurrence peut avoir un titre différent", () => {
+    const evenement: Evenement = {
+      occurrences: [
+        { ...occurrenceSimple, id: "occ-a", titre: "Réunion A", notes: "" },
+        { ...occurrenceSimple, id: "occ-b", titre: "Atelier B", notes: "" },
+      ],
+    };
+    const resultat = genererICS(evenement);
+    expect(resultat).toContain("SUMMARY:Réunion A");
+    expect(resultat).toContain("SUMMARY:Atelier B");
+  });
+
+  it("chaque occurrence peut avoir des notes différentes", () => {
+    const evenement: Evenement = {
+      occurrences: [
+        { ...occurrenceSimple, id: "occ-a", notes: "Notes A" },
+        { ...occurrenceSimple, id: "occ-b", notes: "Notes B" },
+      ],
+    };
+    const resultat = genererICS(evenement);
+    expect(resultat).toContain("DESCRIPTION:Notes A");
+    expect(resultat).toContain("DESCRIPTION:Notes B");
   });
 
   // ── CRLF ──────────────────────────────────────────────────────────────────
@@ -92,9 +114,7 @@ describe("genererICS", () => {
   it("replie les lignes dépassant 75 octets", () => {
     const titreLong = "A".repeat(80); // SUMMARY: + 80 chars > 75 octets
     const evenement: Evenement = {
-      titre: titreLong,
-      notes: "",
-      occurrences: [occurrenceSimple],
+      occurrences: [{ ...occurrenceSimple, titre: titreLong, notes: "" }],
     };
     const resultat = genererICS(evenement);
 
@@ -108,9 +128,7 @@ describe("genererICS", () => {
   it("ligne repliée : continuation commence par un espace", () => {
     const titreLong = "B".repeat(80);
     const evenement: Evenement = {
-      titre: titreLong,
-      notes: "",
-      occurrences: [occurrenceSimple],
+      occurrences: [{ ...occurrenceSimple, titre: titreLong, notes: "" }],
     };
     const resultat = genererICS(evenement);
 
@@ -121,9 +139,7 @@ describe("genererICS", () => {
   it("ligne pliée puis dépliée reconstruit le titre complet", () => {
     const titreLong = "C".repeat(100);
     const evenement: Evenement = {
-      titre: titreLong,
-      notes: "",
-      occurrences: [occurrenceSimple],
+      occurrences: [{ ...occurrenceSimple, titre: titreLong, notes: "" }],
     };
     const resultat = genererICS(evenement);
     const lignes = depilerLignes(resultat);
@@ -136,8 +152,7 @@ describe("genererICS", () => {
 
   it("échappe les virgules dans le titre", () => {
     const evenement: Evenement = {
-      ...evenementSimple,
-      titre: "Café, thé, jus",
+      occurrences: [{ ...occurrenceSimple, titre: "Café, thé, jus", notes: "" }],
     };
     const resultat = genererICS(evenement);
     const lignes = depilerLignes(resultat);
@@ -147,8 +162,7 @@ describe("genererICS", () => {
 
   it("échappe les points-virgules dans le titre", () => {
     const evenement: Evenement = {
-      ...evenementSimple,
-      titre: "Point A; Point B",
+      occurrences: [{ ...occurrenceSimple, titre: "Point A; Point B", notes: "" }],
     };
     const resultat = genererICS(evenement);
     const lignes = depilerLignes(resultat);
@@ -158,8 +172,7 @@ describe("genererICS", () => {
 
   it("échappe les backslashs dans le titre", () => {
     const evenement: Evenement = {
-      ...evenementSimple,
-      titre: "Chemin\\Fichier",
+      occurrences: [{ ...occurrenceSimple, titre: "Chemin\\Fichier", notes: "" }],
     };
     const resultat = genererICS(evenement);
     const lignes = depilerLignes(resultat);
@@ -169,8 +182,7 @@ describe("genererICS", () => {
 
   it("échappe les newlines dans les notes", () => {
     const evenement: Evenement = {
-      ...evenementSimple,
-      notes: "Ligne 1\nLigne 2",
+      occurrences: [{ ...occurrenceSimple, notes: "Ligne 1\nLigne 2" }],
     };
     const resultat = genererICS(evenement);
     const lignes = depilerLignes(resultat);
@@ -183,13 +195,14 @@ describe("genererICS", () => {
   it("journée entière : DTSTART avec VALUE=DATE au format YYYYMMDD", () => {
     const occ: Occurrence = {
       id: "occ-jour",
+      titre: "Fête",
+      notes: "",
       dateDebut: new Date(Date.UTC(2024, 5, 20)), // minuit UTC — date-only, pas d'ambiguïté timezone
       dateFin: new Date(Date.UTC(2024, 5, 20)),
       lieu: "",
       touteLaJournee: true,
     };
-    const evenement: Evenement = { titre: "Fête", notes: "", occurrences: [occ] };
-    const resultat = genererICS(evenement);
+    const resultat = genererICS({ occurrences: [occ] });
     const lignes = depilerLignes(resultat);
 
     const dtstart = lignes.find((l) => l.startsWith("DTSTART;VALUE=DATE:"));
@@ -201,13 +214,14 @@ describe("genererICS", () => {
   it("journée entière : DTEND = J+1", () => {
     const occ: Occurrence = {
       id: "occ-jour",
+      titre: "Fête",
+      notes: "",
       dateDebut: new Date(Date.UTC(2024, 5, 20)), // minuit UTC
       dateFin: new Date(Date.UTC(2024, 5, 20)),
       lieu: "",
       touteLaJournee: true,
     };
-    const evenement: Evenement = { titre: "Fête", notes: "", occurrences: [occ] };
-    const resultat = genererICS(evenement);
+    const resultat = genererICS({ occurrences: [occ] });
     const lignes = depilerLignes(resultat);
 
     const dtend = lignes.find((l) => l.startsWith("DTEND;VALUE=DATE:"));
@@ -219,13 +233,14 @@ describe("genererICS", () => {
   it("journée entière : pas de TZID dans DTSTART/DTEND", () => {
     const occ: Occurrence = {
       id: "occ-jour",
+      titre: "Fête",
+      notes: "",
       dateDebut: new Date(Date.UTC(2024, 5, 20)), // minuit UTC
       dateFin: new Date(Date.UTC(2024, 5, 20)),
       lieu: "",
       touteLaJournee: true,
     };
-    const evenement: Evenement = { titre: "Fête", notes: "", occurrences: [occ] };
-    const resultat = genererICS(evenement);
+    const resultat = genererICS({ occurrences: [occ] });
 
     expect(resultat).not.toMatch(/DTSTART;TZID=/);
     expect(resultat).not.toMatch(/DTEND;TZID=/);
@@ -234,15 +249,8 @@ describe("genererICS", () => {
   // ── Rappel VALARM ─────────────────────────────────────────────────────────
 
   it("rappel : bloc VALARM présent avec TRIGGER correct", () => {
-    const occ: Occurrence = {
-      ...occurrenceSimple,
-      rappelMinutes: 15,
-    };
-    const evenement: Evenement = {
-      ...evenementSimple,
-      occurrences: [occ],
-    };
-    const resultat = genererICS(evenement);
+    const occ: Occurrence = { ...occurrenceSimple, rappelMinutes: 15 };
+    const resultat = genererICS({ occurrences: [occ] });
 
     expect(resultat).toContain("BEGIN:VALARM");
     expect(resultat).toContain("END:VALARM");
@@ -251,22 +259,15 @@ describe("genererICS", () => {
   });
 
   it("sans rappel : aucun bloc VALARM", () => {
-    const occ: Occurrence = {
-      ...occurrenceSimple,
-      rappelMinutes: undefined,
-    };
-    const evenement: Evenement = {
-      ...evenementSimple,
-      occurrences: [occ],
-    };
-    const resultat = genererICS(evenement);
+    const occ: Occurrence = { ...occurrenceSimple, rappelMinutes: undefined };
+    const resultat = genererICS({ occurrences: [occ] });
 
     expect(resultat).not.toContain("BEGIN:VALARM");
   });
 
   it("rappel de 0 minute : TRIGGER:-PT0M", () => {
     const occ: Occurrence = { ...occurrenceSimple, rappelMinutes: 0 };
-    const resultat = genererICS({ ...evenementSimple, occurrences: [occ] });
+    const resultat = genererICS({ occurrences: [occ] });
     expect(resultat).toContain("TRIGGER:-PT0M");
   });
 
@@ -274,7 +275,7 @@ describe("genererICS", () => {
 
   it("lieu non vide : propriété LOCATION présente", () => {
     const occ: Occurrence = { ...occurrenceSimple, lieu: "Salle Voltaire" };
-    const resultat = genererICS({ ...evenementSimple, occurrences: [occ] });
+    const resultat = genererICS({ occurrences: [occ] });
     const lignes = depilerLignes(resultat);
     const location = lignes.find((l) => l.startsWith("LOCATION:"));
     expect(location).toBe("LOCATION:Salle Voltaire");
@@ -282,19 +283,14 @@ describe("genererICS", () => {
 
   it("lieu vide : propriété LOCATION absente", () => {
     const occ: Occurrence = { ...occurrenceSimple, lieu: "" };
-    const resultat = genererICS({ ...evenementSimple, occurrences: [occ] });
+    const resultat = genererICS({ occurrences: [occ] });
     expect(resultat).not.toContain("LOCATION:");
   });
 
   // ── Titre vide ────────────────────────────────────────────────────────────
 
   it("titre vide : SUMMARY vide mais VEVENT généré quand même", () => {
-    const evenement: Evenement = {
-      titre: "",
-      notes: "",
-      occurrences: [occurrenceSimple],
-    };
-    const resultat = genererICS(evenement);
+    const resultat = genererICS({ occurrences: [{ ...occurrenceSimple, titre: "" }] });
     expect(resultat).toContain("BEGIN:VEVENT");
     // SUMMARY: présent mais avec valeur vide
     expect(resultat).toContain("SUMMARY:");
@@ -304,8 +300,6 @@ describe("genererICS", () => {
 
   it("deux occurrences différentes ont des UID distincts", () => {
     const evenement: Evenement = {
-      titre: "Test UID",
-      notes: "",
       occurrences: [
         { ...occurrenceSimple, id: "occ-x" },
         { ...occurrenceSimple, id: "occ-y" },
@@ -331,8 +325,7 @@ describe("genererICS", () => {
 
   it("échappe une chaîne avec \\r\\n : \\r supprimé, \\n converti en littéral ICS", () => {
     const evenement: Evenement = {
-      ...evenementSimple,
-      notes: "Ligne 1\r\nLigne 2",
+      occurrences: [{ ...occurrenceSimple, notes: "Ligne 1\r\nLigne 2" }],
     };
     const resultat = genererICS(evenement);
     const lignes = depilerLignes(resultat);
@@ -364,13 +357,14 @@ describe("genererICS", () => {
     // 2024-06-15T10:00:00Z → UTC+2 en été → heure locale = 12h
     const occ: Occurrence = {
       id: "occ-tz",
+      titre: "Test fuseau",
+      notes: "",
       dateDebut: new Date("2024-06-15T10:00:00Z"),
       dateFin: new Date("2024-06-15T11:00:00Z"),
       lieu: "",
       touteLaJournee: false,
     };
-    const evenement: Evenement = { titre: "Test fuseau", notes: "", occurrences: [occ] };
-    const resultat = genererICS(evenement, { fuseau: "Europe/Paris" });
+    const resultat = genererICS({ occurrences: [occ] }, { fuseau: "Europe/Paris" });
     const lignes = depilerLignes(resultat);
 
     const dtstart = lignes.find((l) => l.startsWith("DTSTART;TZID=Europe/Paris:"));
@@ -392,8 +386,6 @@ describe("genererICS", () => {
 
   it("plusieurs occurrences partagent le même DTSTAMP (instant de génération commun)", () => {
     const evenement: Evenement = {
-      titre: "Cohérence DTSTAMP",
-      notes: "",
       occurrences: [
         { ...occurrenceSimple, id: "occ-a" },
         { ...occurrenceSimple, id: "occ-b" },
@@ -417,13 +409,13 @@ describe("genererICS", () => {
   // ── Notes vides ───────────────────────────────────────────────────────────
 
   it("notes vides : propriété DESCRIPTION absente", () => {
-    const evenement: Evenement = { ...evenementSimple, notes: "" };
+    const evenement: Evenement = { occurrences: [{ ...occurrenceSimple, notes: "" }] };
     const resultat = genererICS(evenement);
     expect(resultat).not.toContain("DESCRIPTION:");
   });
 
   it("notes non vides : propriété DESCRIPTION présente", () => {
-    const evenement: Evenement = { ...evenementSimple, notes: "Prendre les slides" };
+    const evenement: Evenement = { occurrences: [{ ...occurrenceSimple, notes: "Prendre les slides" }] };
     const resultat = genererICS(evenement);
     const lignes = depilerLignes(resultat);
     const desc = lignes.find((l) => l.startsWith("DESCRIPTION:"));
@@ -434,7 +426,7 @@ describe("genererICS", () => {
 
   it("rappel : bloc VALARM contient DESCRIPTION:Rappel", () => {
     const occ: Occurrence = { ...occurrenceSimple, rappelMinutes: 10 };
-    const resultat = genererICS({ ...evenementSimple, occurrences: [occ] });
+    const resultat = genererICS({ occurrences: [occ] });
     const lignes = depilerLignes(resultat);
     const descValarm = lignes.find((l) => l === "DESCRIPTION:Rappel");
     expect(descValarm).toBeDefined();
@@ -442,7 +434,7 @@ describe("genererICS", () => {
 
   it("rappel de 60 minutes : TRIGGER:-PT60M", () => {
     const occ: Occurrence = { ...occurrenceSimple, rappelMinutes: 60 };
-    const resultat = genererICS({ ...evenementSimple, occurrences: [occ] });
+    const resultat = genererICS({ occurrences: [occ] });
     expect(resultat).toContain("TRIGGER:-PT60M");
   });
 
@@ -450,7 +442,7 @@ describe("genererICS", () => {
 
   it("échappe les virgules dans le lieu", () => {
     const occ: Occurrence = { ...occurrenceSimple, lieu: "Salle A, Bâtiment B" };
-    const resultat = genererICS({ ...evenementSimple, occurrences: [occ] });
+    const resultat = genererICS({ occurrences: [occ] });
     const lignes = depilerLignes(resultat);
     const location = lignes.find((l) => l.startsWith("LOCATION:"));
     expect(location).toBe("LOCATION:Salle A\\, Bâtiment B");
@@ -461,7 +453,7 @@ describe("genererICS", () => {
   it("replie correctement une ligne avec des caractères UTF-8 multi-octets (accents)", () => {
     // "é" = 2 octets — vérifier que le repli ne coupe pas au milieu d'un caractère
     const titreAccents = "Réunion générale — ".repeat(5); // > 75 octets, plein d'accents
-    const evenement: Evenement = { titre: titreAccents, notes: "", occurrences: [occurrenceSimple] };
+    const evenement: Evenement = { occurrences: [{ ...occurrenceSimple, titre: titreAccents, notes: "" }] };
     const resultat = genererICS(evenement);
 
     // Toutes les lignes physiques ≤ 75 octets
@@ -481,12 +473,14 @@ describe("genererICS", () => {
   it("journée entière multi-jours : DTEND = dateFin + 1 jour", () => {
     const occ: Occurrence = {
       id: "occ-multi",
+      titre: "Vacances",
+      notes: "",
       dateDebut: new Date(Date.UTC(2024, 5, 20)), // minuit UTC
       dateFin: new Date(Date.UTC(2024, 5, 22)), // 3 jours — DTEND attendu = 20240623
       lieu: "",
       touteLaJournee: true,
     };
-    const resultat = genererICS({ titre: "Vacances", notes: "", occurrences: [occ] });
+    const resultat = genererICS({ occurrences: [occ] });
     const lignes = depilerLignes(resultat);
     const dtend = lignes.find((l) => l.startsWith("DTEND;VALUE=DATE:"));
     expect(dtend).toBe("DTEND;VALUE=DATE:20240623");
@@ -501,12 +495,14 @@ describe("genererICS", () => {
   it("fuseau UTC : DTSTART sans décalage (même heure que l'instant UTC)", () => {
     const occ: Occurrence = {
       id: "occ-utc",
+      titre: "Test UTC",
+      notes: "",
       dateDebut: new Date("2024-06-15T14:30:00Z"),
       dateFin: new Date("2024-06-15T15:00:00Z"),
       lieu: "",
       touteLaJournee: false,
     };
-    const resultat = genererICS({ titre: "Test UTC", notes: "", occurrences: [occ] }, { fuseau: "UTC" });
+    const resultat = genererICS({ occurrences: [occ] }, { fuseau: "UTC" });
     const lignes = depilerLignes(resultat);
     const dtstart = lignes.find((l) => l.startsWith("DTSTART;TZID=UTC:"));
     expect(dtstart).toBeDefined();

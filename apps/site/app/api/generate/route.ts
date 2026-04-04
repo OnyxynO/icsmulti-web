@@ -54,18 +54,21 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const { evenement, options } = corps;
 
-  if (!evenement?.titre || evenement.titre.trim() === "") {
-    return Response.json(
-      { error: "Le champ evenement.titre est obligatoire" },
-      { status: 400 },
-    );
-  }
-
-  if (!Array.isArray(evenement.occurrences) || evenement.occurrences.length === 0) {
+  if (!Array.isArray(evenement?.occurrences) || evenement.occurrences.length === 0) {
     return Response.json(
       { error: "L'événement doit contenir au moins une occurrence" },
       { status: 400 },
     );
+  }
+
+  // Valider que chaque occurrence a un titre non vide
+  for (const occ of evenement.occurrences) {
+    if (!occ.titre || (occ.titre as string).trim() === "") {
+      return Response.json(
+        { error: "Chaque occurrence doit avoir un titre non vide" },
+        { status: 400 },
+      );
+    }
   }
 
   // Les dates arrivent en JSON sous forme de chaînes ISO — les reconvertir en Date
@@ -83,7 +86,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     occurrencesAvecDates.push({ ...occ, dateDebut, dateFin });
   }
 
-  const evenementAvecDates: Evenement = { ...evenement, occurrences: occurrencesAvecDates };
+  const evenementAvecDates: Evenement = { occurrences: occurrencesAvecDates };
 
   // ── 4. Générer le fichier ICS ─────────────────────────────────────────────────
   let contenuICS: string;
@@ -99,9 +102,10 @@ export async function POST(request: NextRequest): Promise<Response> {
   await redis.hincrby(`apikey:${hash}`, "usageCount", 1);
 
   // ── 6. Retourner le fichier ICS ───────────────────────────────────────────────
-  // Nom de fichier basé sur le titre, caractères non alphanumériques remplacés par "_"
+  // Nom de fichier basé sur le titre de la première occurrence
   // Nom de fichier ASCII uniquement — filename="..." dans Content-Disposition ne supporte pas les accents (RFC 6266)
-  const nomFichier = `${evenement.titre.replace(/[^a-zA-Z0-9]/g, "_")}.ics`;
+  const titreFichier = (evenement.occurrences[0].titre as string).trim() || "export";
+  const nomFichier = `${titreFichier.replace(/[^a-zA-Z0-9]/g, "_")}.ics`;
 
   return new Response(contenuICS, {
     status: 200,

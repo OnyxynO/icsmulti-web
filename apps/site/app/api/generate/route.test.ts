@@ -31,11 +31,11 @@ let mockRedis: { hgetall: typeof mockHgetall; hincrby: typeof mockHincrby } | nu
 // ─── Données de test ──────────────────────────────────────────────────────────
 
 const evenementValide = {
-  titre: "Réunion d'équipe",
-  notes: "Ordre du jour",
   occurrences: [
     {
       id: "occ-1",
+      titre: "Réunion d'équipe",
+      notes: "Ordre du jour",
       dateDebut: "2024-06-15T10:00:00Z",
       dateFin: "2024-06-15T11:00:00Z",
       lieu: "Paris",
@@ -129,12 +129,16 @@ describe("POST /api/generate", () => {
     expect(corps.error).toMatch(/json invalide/i);
   });
 
-  // ── 400 — titre manquant ──────────────────────────────────────────────────
+  // ── 400 — titre manquant dans une occurrence ─────────────────────────────
 
-  it("retourne 400 si le titre est absent ou vide", async () => {
+  it("retourne 400 si le titre d'une occurrence est absent ou vide", async () => {
     const { POST } = await import("./route");
     const req = creerRequete(
-      { evenement: { ...evenementValide, titre: "   " } },
+      {
+        evenement: {
+          occurrences: [{ ...evenementValide.occurrences[0], titre: "   " }],
+        },
+      },
       "ma-cle",
     );
     const res = await POST(req);
@@ -239,7 +243,7 @@ describe("POST /api/generate", () => {
 
     expect(res.status).toBe(400);
     const corps = await res.json();
-    expect(corps.error).toMatch(/titre/i);
+    expect(corps.error).toMatch(/occurrence/i);
   });
 
   // ── 400 — fuseau invalide dans options ────────────────────────────────────
@@ -263,10 +267,14 @@ describe("POST /api/generate", () => {
 
   // ── 200 — nom de fichier dans Content-Disposition ─────────────────────────
 
-  it("le nom de fichier dans Content-Disposition est basé sur le titre de l'événement", async () => {
+  it("le nom de fichier dans Content-Disposition est basé sur le titre de la première occurrence", async () => {
     const { POST } = await import("./route");
     // Titre ASCII simple pour un résultat prévisible sans ambiguïté d'encodage
-    const req = creerRequete({ evenement: { ...evenementValide, titre: "Mon Evenement Test" } }, "ma-cle");
+    const req = creerRequete({
+      evenement: {
+        occurrences: [{ ...evenementValide.occurrences[0], titre: "Mon Evenement Test" }],
+      },
+    }, "ma-cle");
     const res = await POST(req);
 
     expect(res.status).toBe(200);
@@ -284,9 +292,9 @@ describe("POST /api/generate", () => {
     );
     await POST(req);
 
-    // genererICS doit avoir été appelé avec les options contenant le fuseau
+    // genererICS doit avoir été appelé avec les occurrences et les options
     expect(mockGenererICS).toHaveBeenCalledWith(
-      expect.objectContaining({ titre: evenementValide.titre }),
+      expect.objectContaining({ occurrences: expect.any(Array) }),
       expect.objectContaining({ fuseau: "America/New_York" }),
     );
   });
