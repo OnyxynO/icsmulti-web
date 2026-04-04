@@ -1,6 +1,7 @@
 "use client";
 
 import { type Evenement, genererICS, type Occurrence } from "@icsmulti/core";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./FormulaireICS.module.css";
 
@@ -21,19 +22,6 @@ interface OccurrenceFormulaire {
   touteLaJournee: boolean;
   rappelMinutes: string; // "" = aucun rappel
 }
-
-// ─── Options de rappel ────────────────────────────────────────────────────────
-
-const OPTIONS_RAPPEL: { valeur: string; libelle: string }[] = [
-  { valeur: "", libelle: "Aucun rappel" },
-  { valeur: "5", libelle: "5 minutes avant" },
-  { valeur: "10", libelle: "10 minutes avant" },
-  { valeur: "15", libelle: "15 minutes avant" },
-  { valeur: "30", libelle: "30 minutes avant" },
-  { valeur: "60", libelle: "1 heure avant" },
-  { valeur: "120", libelle: "2 heures avant" },
-  { valeur: "1440", libelle: "1 jour avant" },
-];
 
 // ─── Utilitaires ──────────────────────────────────────────────────────────────
 
@@ -89,9 +77,10 @@ interface AutocompletionLieuProps {
   valeur: string;
   onChange: (valeur: string) => void;
   id: string;
+  placeholder: string;
 }
 
-function AutocompletionLieu({ valeur, onChange, id }: AutocompletionLieuProps) {
+function AutocompletionLieu({ valeur, onChange, id, placeholder }: AutocompletionLieuProps) {
   const [suggestions, setSuggestions] = useState<SuggestionNominatim[]>([]);
   const [ouvert, setOuvert] = useState(false);
   const minuteurRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -155,7 +144,7 @@ function AutocompletionLieu({ valeur, onChange, id }: AutocompletionLieuProps) {
         onChange={gererChangement}
         onBlur={gererBlur}
         onFocus={() => suggestions.length > 0 && setOuvert(true)}
-        placeholder="Adresse ou lieu (optionnel)"
+        placeholder={placeholder}
         autoComplete="off"
         className={styles.champ}
       />
@@ -191,21 +180,23 @@ interface CartOccurrenceProps {
   onChange: (id: string, champ: keyof OccurrenceFormulaire, valeur: string | boolean) => void;
   onSupprimer: (id: string) => void;
   erreurs: Partial<Record<keyof OccurrenceFormulaire, string>>;
+  t: ReturnType<typeof useTranslations<"formulaire">>;
+  optionsRappel: { valeur: string; libelle: string }[];
 }
 
-function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprimer, erreurs }: CartOccurrenceProps) {
+function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprimer, erreurs, t, optionsRappel }: CartOccurrenceProps) {
   const prefixId = `occ-${occurrence.id}`;
 
   return (
     <fieldset className={styles.carteOccurrence}>
       <legend className={styles.legendeOccurrence}>
-        Occurrence {index + 1}
+        {t("occurrence_numero", { num: index + 1 })}
         {peutSupprimer && (
           <button
             type="button"
             onClick={() => onSupprimer(occurrence.id)}
             className={styles.boutonSupprimer}
-            aria-label={`Supprimer l'occurrence ${index + 1}`}
+            aria-label={t("supprimer_label", { num: index + 1 })}
           >
             ✕
           </button>
@@ -220,14 +211,14 @@ function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprim
           checked={occurrence.touteLaJournee}
           onChange={(e) => onChange(occurrence.id, "touteLaJournee", e.target.checked)}
         />
-        <label htmlFor={`${prefixId}-journee`}>Journée entière</label>
+        <label htmlFor={`${prefixId}-journee`}>{t("journee_entiere")}</label>
       </div>
 
       {/* Dates */}
       <div className={styles.ligneDeuxColonnes}>
         <div className={styles.groupe}>
           <label htmlFor={`${prefixId}-debut`}>
-            {occurrence.touteLaJournee ? "Date de début" : "Début"} <span className={styles.obligatoire}>*</span>
+            {occurrence.touteLaJournee ? t("date_debut") : t("heure_debut")} <span className={styles.obligatoire}>*</span>
           </label>
           <input
             id={`${prefixId}-debut`}
@@ -244,7 +235,7 @@ function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprim
 
         <div className={styles.groupe}>
           <label htmlFor={`${prefixId}-fin`}>
-            {occurrence.touteLaJournee ? "Date de fin" : "Fin"} <span className={styles.obligatoire}>*</span>
+            {occurrence.touteLaJournee ? t("date_fin") : t("heure_fin")} <span className={styles.obligatoire}>*</span>
           </label>
           <input
             id={`${prefixId}-fin`}
@@ -262,24 +253,25 @@ function CarteOccurrence({ occurrence, index, peutSupprimer, onChange, onSupprim
 
       {/* Lieu avec autocomplétion */}
       <div className={styles.groupe}>
-        <label htmlFor={`${prefixId}-lieu`}>Lieu</label>
+        <label htmlFor={`${prefixId}-lieu`}>{t("lieu_label")}</label>
         <AutocompletionLieu
           id={`${prefixId}-lieu`}
           valeur={occurrence.lieu}
           onChange={(v) => onChange(occurrence.id, "lieu", v)}
+          placeholder={t("lieu_placeholder")}
         />
       </div>
 
       {/* Rappel */}
       <div className={styles.groupe}>
-        <label htmlFor={`${prefixId}-rappel`}>Rappel</label>
+        <label htmlFor={`${prefixId}-rappel`}>{t("rappel_label")}</label>
         <select
           id={`${prefixId}-rappel`}
           value={occurrence.rappelMinutes}
           onChange={(e) => onChange(occurrence.id, "rappelMinutes", e.target.value)}
           className={styles.champ}
         >
-          {OPTIONS_RAPPEL.map((opt) => (
+          {optionsRappel.map((opt) => (
             <option key={opt.valeur} value={opt.valeur}>
               {opt.libelle}
             </option>
@@ -300,6 +292,7 @@ interface ErreursFormulaire {
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export default function FormulaireICS() {
+  const t = useTranslations("formulaire");
   const [titre, setTitre] = useState("");
   const [notes, setNotes] = useState("");
   const [occurrences, setOccurrences] = useState<OccurrenceFormulaire[]>([occurrenceVide()]);
@@ -308,6 +301,17 @@ export default function FormulaireICS() {
   });
   const [exportReussi, setExportReussi] = useState(false);
   const tacheDisparitionRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const optionsRappel = [
+    { valeur: "", libelle: t("rappel_aucun") },
+    { valeur: "5", libelle: t("rappel_5min") },
+    { valeur: "10", libelle: t("rappel_10min") },
+    { valeur: "15", libelle: t("rappel_15min") },
+    { valeur: "30", libelle: t("rappel_30min") },
+    { valeur: "60", libelle: t("rappel_1h") },
+    { valeur: "120", libelle: t("rappel_2h") },
+    { valeur: "1440", libelle: t("rappel_1j") },
+  ];
 
   useEffect(() => {
     return () => {
@@ -361,7 +365,7 @@ export default function FormulaireICS() {
     let valide = true;
 
     if (!titre.trim()) {
-      nvErreurs.titre = "Le titre est obligatoire.";
+      nvErreurs.titre = t("titre_erreur");
       valide = false;
     }
 
@@ -369,11 +373,11 @@ export default function FormulaireICS() {
       const erreursOcc: Partial<Record<keyof OccurrenceFormulaire, string>> = {};
 
       if (!occ.dateDebut) {
-        erreursOcc.dateDebut = "La date de début est obligatoire.";
+        erreursOcc.dateDebut = t("erreur_debut_obligatoire");
         valide = false;
       }
       if (!occ.dateFin) {
-        erreursOcc.dateFin = "La date de fin est obligatoire.";
+        erreursOcc.dateFin = t("erreur_fin_obligatoire");
         valide = false;
       }
 
@@ -381,7 +385,7 @@ export default function FormulaireICS() {
         const debut = new Date(occ.dateDebut);
         const fin = new Date(occ.dateFin);
         if (fin < debut) {
-          erreursOcc.dateFin = "La date de fin doit être après le début.";
+          erreursOcc.dateFin = t("erreur_fin_avant_debut");
           valide = false;
         }
       }
@@ -444,13 +448,6 @@ export default function FormulaireICS() {
 
   return (
     <div className={styles.conteneur}>
-      <header className={styles.entete}>
-        <h1 className={styles.titre}>Générateur de fichier .ics</h1>
-        <p className={styles.sousTitre}>
-          Créez un événement compatible avec tous les calendriers (Apple, Google, Outlook…)
-        </p>
-      </header>
-
       <form
         className={styles.formulaire}
         onSubmit={(e) => {
@@ -462,14 +459,14 @@ export default function FormulaireICS() {
         {/* Titre */}
         <div className={styles.groupe}>
           <label htmlFor="titre-evenement">
-            Titre <span className={styles.obligatoire}>*</span>
+            {t("titre_label")} <span className={styles.obligatoire}>*</span>
           </label>
           <input
             id="titre-evenement"
             type="text"
             value={titre}
             onChange={(e) => setTitre(e.target.value)}
-            placeholder="Nom de l'événement"
+            placeholder={t("titre_placeholder")}
             className={`${styles.champ} ${erreurs.titre ? styles.champErreur : ""}`}
             aria-describedby={erreurs.titre ? "erreur-titre-evenement" : undefined}
             aria-invalid={!!erreurs.titre}
@@ -480,12 +477,12 @@ export default function FormulaireICS() {
 
         {/* Notes */}
         <div className={styles.groupe}>
-          <label htmlFor="notes-evenement">Notes</label>
+          <label htmlFor="notes-evenement">{t("notes_label")}</label>
           <textarea
             id="notes-evenement"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Description, informations complémentaires… (optionnel)"
+            placeholder={t("notes_placeholder")}
             rows={3}
             className={styles.champ}
           />
@@ -493,7 +490,7 @@ export default function FormulaireICS() {
 
         {/* Occurrences */}
         <div className={styles.sectionOccurrences}>
-          <h2 className={styles.titreSectionOccurrences}>Occurrences</h2>
+          <h2 className={styles.titreSectionOccurrences}>{t("section_occurrences")}</h2>
 
           {occurrences.map((occ, index) => (
             <CarteOccurrence
@@ -504,28 +501,30 @@ export default function FormulaireICS() {
               onChange={modifierOccurrence}
               onSupprimer={supprimerOccurrence}
               erreurs={erreurs.occurrences[occ.id] ?? {}}
+              t={t}
+              optionsRappel={optionsRappel}
             />
           ))}
 
           <button type="button" onClick={ajouterOccurrence} className={styles.boutonAjouter}>
-            + Ajouter une occurrence
+            {t("ajouter_occurrence")}
           </button>
         </div>
 
         {/* Bouton export */}
         <div className={styles.zoneTelecharger}>
           <button type="submit" className={styles.boutonTelecharger}>
-            ↓ Télécharger le .ics
+            {t("telecharger")}
           </button>
-          {exportReussi && <output className={styles.feedbackReussi}>Fichier généré !</output>}
+          {exportReussi && <output className={styles.feedbackReussi}>{t("export_reussi")}</output>}
         </div>
       </form>
 
       {/* Attribution OSM obligatoire */}
       <footer className={styles.attribution}>
-        Autocomplétion des adresses :{" "}
+        {t("attribution_texte")}{" "}
         <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">
-          © OpenStreetMap contributors
+          {t("attribution_lien")}
         </a>
       </footer>
     </div>
