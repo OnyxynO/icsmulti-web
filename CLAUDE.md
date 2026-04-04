@@ -49,9 +49,32 @@ Toujours builder `core` en premier — `site` et `widget` en dépendent.
 - [x] **Phase 4** — Module API : `POST /api/generate` + clés API (Upstash KV) + page `/api-key`
 - [x] **Phase 5** — Site landing : i18n next-intl + pages `/app`, `/api-docs`, `/widget`, `/desktop`
 - [x] **Phase 6** — Module widget : bundle Vite IIFE → `apps/site/public/widget.js`
-- [x] **Tests** — 55 tests Vitest (40 core RFC 5545 + 15 route handler POST /api/generate)
+- [x] **Tests** — 57 tests Vitest (42 core RFC 5545 + 15 route handler POST /api/generate)
 - [x] **Démo live** — DemoWidget Client Component sur /widget (next/script + ICSMulti.init())
 - [x] **Doc API** — /api-docs : schéma complet, codes d'erreur, curl corrigé
+- [x] **Refactoring titre/notes par occurrence** — chaque VEVENT est indépendant (web + Swift)
+
+## Modèle de données (core)
+
+```ts
+interface Occurrence {
+  id: string;
+  titre: string;          // propre à chaque occurrence
+  notes: string;          // propre à chaque occurrence
+  dateDebut: Date;
+  dateFin: Date;
+  lieu: string;
+  touteLaJournee: boolean;
+  rappelMinutes?: number;
+}
+
+interface Evenement {
+  occurrences: Occurrence[];  // titre/notes au niveau occurrence, pas à ce niveau
+}
+```
+
+Chaque `Occurrence` génère un VEVENT indépendant avec son propre `SUMMARY` et `DESCRIPTION`.
+Le nom du fichier `.ics` exporté est basé sur le titre de la première occurrence.
 
 ## Contraintes RFC 5545 (core)
 

@@ -43,16 +43,16 @@ export default async function PageApiDocs() {
 					<h2 className={styles.titreSec}>{t("schema_titre")}</h2>
 					<pre className={styles.bloc}>{`{
   "evenement": {                        // ${t("schema_obligatoire")}
-    "titre":       string,              // ${t("schema_obligatoire")} — titre de l'événement
-    "notes":       string,              // ${t("schema_optionnel")}  — description / notes
-    "occurrences": [                    // ${t("schema_obligatoire")} — au moins une occurrence
+    "occurrences": [                    // ${t("schema_obligatoire")} — au moins un événement
       {
-        "id":            string,        // ${t("schema_obligatoire")} — identifiant unique
-        "dateDebut":     string,        // ${t("schema_obligatoire")} — ISO 8601 (ex : "2026-05-12T10:00:00Z")
-        "dateFin":       string,        // ${t("schema_obligatoire")} — ISO 8601
-        "lieu":          string,        // ${t("schema_optionnel")}  — adresse ou lieu
+        "id":             string,       // ${t("schema_obligatoire")} — identifiant unique
+        "titre":          string,       // ${t("schema_obligatoire")} — titre de l'événement
+        "notes":          string,       // ${t("schema_optionnel")}  — description / notes
+        "dateDebut":      string,       // ${t("schema_obligatoire")} — ISO 8601 (ex : "2026-05-12T10:00:00Z")
+        "dateFin":        string,       // ${t("schema_obligatoire")} — ISO 8601
+        "lieu":           string,       // ${t("schema_optionnel")}  — adresse ou lieu
         "touteLaJournee": boolean,      // ${t("schema_optionnel")}  — défaut : false
-        "rappelMinutes": number         // ${t("schema_optionnel")}  — ex : 15, 30, 60, 1440
+        "rappelMinutes":  number        // ${t("schema_optionnel")}  — ex : 15, 30, 60, 1440
       }
     ]
   },
@@ -68,7 +68,7 @@ export default async function PageApiDocs() {
 
 					<h3 className={styles.titreTertaire}>{t("reponse_succes")}</h3>
 					<pre className={styles.bloc}>{`Content-Type: text/calendar; charset=utf-8
-Content-Disposition: attachment; filename="titre_evenement.ics"
+Content-Disposition: attachment; filename="titre_premiere_occurrence.ics"
 
 BEGIN:VCALENDAR
 VERSION:2.0
@@ -112,11 +112,11 @@ VERSION:2.0
   -o reunion.ics \\
   -d '{
     "evenement": {
-      "titre": "Réunion hebdomadaire",
-      "notes": "Ordre du jour à confirmer",
       "occurrences": [
         {
-          "id": "occ-1",
+          "id": "evt-1",
+          "titre": "Réunion hebdomadaire",
+          "notes": "Ordre du jour à confirmer",
           "dateDebut": "2026-05-12T10:00:00Z",
           "dateFin": "2026-05-12T11:00:00Z",
           "lieu": "Salle A, Paris",
