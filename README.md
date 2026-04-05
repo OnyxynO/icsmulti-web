@@ -10,7 +10,7 @@ Générateur de fichiers `.ics` (RFC 5545) décliné en 3 modules : formulaire w
 |--------|-----|-------------|
 | **Formulaire web** | `/app` | Génération directe dans le navigateur, sans installation |
 | **API REST** | `/api/generate` | Intégration dans vos applications via HTTP |
-| **Widget** | `/widget` | Script embarquable sur n'importe quel site _(à venir)_ |
+| **Widget** | `/widget` | Script embarquable sur n'importe quel site |
 | **App macOS** | `/desktop` | Application native multi-occurrences |
 
 ## Architecture
