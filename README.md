@@ -90,6 +90,13 @@ Obtenez une clé API sur [icsmulti-web.vercel.app/api-key](https://icsmulti-web.
 - **Français** (défaut) : `/`, `/app`, `/api-docs`, `/widget`, `/desktop`, `/api-key`
 - **Anglais** : `/en`, `/en/app`, `/en/api-docs`, etc.
 
+## Écosystème ICSMulti
+
+| Projet | Stack | Description |
+|---|---|---|
+| [icsmulti](https://github.com/OnyxynO/icsmulti) | Swift 6 + SwiftUI | App macOS native — multi-occurrences, MapKit, export DMG |
+| [icsmulti-web](https://github.com/OnyxynO/icsmulti-web) | Next.js 16 + TypeScript | Web app + API REST + widget intégrable |
+
 ## Contraintes RFC 5545
 
 - CRLF obligatoire sur toutes les lignes
