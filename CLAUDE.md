@@ -96,6 +96,11 @@ Le nom du fichier `.ics` exporté est basé sur le titre de la première occurre
   - Déclenchement après 3 caractères, debounce 300 ms
   - Attribution OSM obligatoire dans l'UI
 
+## À faire
+
+- **CI/CD** : pas de GitHub Actions — ajouter un workflow qui lance `npm test` + `npm run check` (Biome) à chaque push/PR
+- **Tests automatisés widget** : `packages/widget` n'a pas de tests — envisager des tests d'intégration sur le bundle IIFE (chargement, rendu, export)
+
 ## Pièges connus
 
 - `packages/core` doit être buildé avant `apps/site` — sinon erreur d'import
