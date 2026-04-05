@@ -4,44 +4,44 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { URL_API_BASE } from "@/lib/config";
-import Nav from "../components/Nav";
 import Footer from "../components/Footer";
+import Nav from "../components/Nav";
 import styles from "./page.module.css";
 
 export default async function PageApiDocs() {
-	const t = await getTranslations("api_docs");
+  const t = await getTranslations("api_docs");
 
-	const urlEndpoint = `${URL_API_BASE}/api/generate`;
+  const urlEndpoint = `${URL_API_BASE}/api/generate`;
 
-	return (
-		<div className={styles.page}>
-			<Nav />
-			<main className={styles.main}>
-				<header className={styles.entete}>
-					<h1 className={styles.titre}>{t("titre")}</h1>
-					<p className={styles.sousTitre}>{t("sous_titre")}</p>
-				</header>
+  return (
+    <div className={styles.page}>
+      <Nav />
+      <main className={styles.main}>
+        <header className={styles.entete}>
+          <h1 className={styles.titre}>{t("titre")}</h1>
+          <p className={styles.sousTitre}>{t("sous_titre")}</p>
+        </header>
 
-				{/* ── Endpoint ── */}
-				<section className={styles.section}>
-					<h2 className={styles.titreSec}>{t("endpoint_titre")}</h2>
-					<pre className={styles.bloc}>POST {urlEndpoint}</pre>
-				</section>
+        {/* ── Endpoint ── */}
+        <section className={styles.section}>
+          <h2 className={styles.titreSec}>{t("endpoint_titre")}</h2>
+          <pre className={styles.bloc}>POST {urlEndpoint}</pre>
+        </section>
 
-				{/* ── Authentification ── */}
-				<section className={styles.section}>
-					<h2 className={styles.titreSec}>{t("auth_titre")}</h2>
-					<p className={styles.texte}>{t("auth_desc")}</p>
-					<pre className={styles.bloc}>X-API-Key: votre-cle-api</pre>
-					<Link href="/api-key" className={styles.lienCleApi}>
-						{t("cle_api_lien")}
-					</Link>
-				</section>
+        {/* ── Authentification ── */}
+        <section className={styles.section}>
+          <h2 className={styles.titreSec}>{t("auth_titre")}</h2>
+          <p className={styles.texte}>{t("auth_desc")}</p>
+          <pre className={styles.bloc}>X-API-Key: votre-cle-api</pre>
+          <Link href="/api-key" className={styles.lienCleApi}>
+            {t("cle_api_lien")}
+          </Link>
+        </section>
 
-				{/* ── Schéma du corps ── */}
-				<section className={styles.section}>
-					<h2 className={styles.titreSec}>{t("schema_titre")}</h2>
-					<pre className={styles.bloc}>{`{
+        {/* ── Schéma du corps ── */}
+        <section className={styles.section}>
+          <h2 className={styles.titreSec}>{t("schema_titre")}</h2>
+          <pre className={styles.bloc}>{`{
   "evenement": {                        // ${t("schema_obligatoire")}
     "occurrences": [                    // ${t("schema_obligatoire")} — au moins un événement
       {
@@ -60,53 +60,61 @@ export default async function PageApiDocs() {
     "fuseau": string                    // ${t("schema_optionnel")}  — IANA (défaut : "Europe/Paris")
   }
 }`}</pre>
-				</section>
+        </section>
 
-				{/* ── Réponse ── */}
-				<section className={styles.section}>
-					<h2 className={styles.titreSec}>{t("reponse_titre")}</h2>
+        {/* ── Réponse ── */}
+        <section className={styles.section}>
+          <h2 className={styles.titreSec}>{t("reponse_titre")}</h2>
 
-					<h3 className={styles.titreTertaire}>{t("reponse_succes")}</h3>
-					<pre className={styles.bloc}>{`Content-Type: text/calendar; charset=utf-8
+          <h3 className={styles.titreTertaire}>{t("reponse_succes")}</h3>
+          <pre className={styles.bloc}>{`Content-Type: text/calendar; charset=utf-8
 Content-Disposition: attachment; filename="titre_premiere_occurrence.ics"
 
 BEGIN:VCALENDAR
 VERSION:2.0
 ...`}</pre>
 
-					<h3 className={styles.titreTertaire}>{t("reponse_erreurs")}</h3>
-					<table className={styles.tableau}>
-						<thead>
-							<tr>
-								<th className={styles.th}>Code</th>
-								<th className={styles.th}>{"error"}</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td className={styles.td}><code className={styles.code}>400</code></td>
-								<td className={styles.td}>Corps JSON invalide / champ manquant ou incorrect</td>
-							</tr>
-							<tr>
-								<td className={styles.td}><code className={styles.code}>401</code></td>
-								<td className={styles.td}>Clé API manquante (header X-API-Key absent)</td>
-							</tr>
-							<tr>
-								<td className={styles.td}><code className={styles.code}>403</code></td>
-								<td className={styles.td}>Clé API invalide ou révoquée</td>
-							</tr>
-							<tr>
-								<td className={styles.td}><code className={styles.code}>503</code></td>
-								<td className={styles.td}>Service non configuré (KV indisponible)</td>
-							</tr>
-						</tbody>
-					</table>
-				</section>
+          <h3 className={styles.titreTertaire}>{t("reponse_erreurs")}</h3>
+          <table className={styles.tableau}>
+            <thead>
+              <tr>
+                <th className={styles.th}>Code</th>
+                <th className={styles.th}>{"error"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className={styles.td}>
+                  <code className={styles.code}>400</code>
+                </td>
+                <td className={styles.td}>Corps JSON invalide / champ manquant ou incorrect</td>
+              </tr>
+              <tr>
+                <td className={styles.td}>
+                  <code className={styles.code}>401</code>
+                </td>
+                <td className={styles.td}>Clé API manquante (header X-API-Key absent)</td>
+              </tr>
+              <tr>
+                <td className={styles.td}>
+                  <code className={styles.code}>403</code>
+                </td>
+                <td className={styles.td}>Clé API invalide ou révoquée</td>
+              </tr>
+              <tr>
+                <td className={styles.td}>
+                  <code className={styles.code}>503</code>
+                </td>
+                <td className={styles.td}>Service non configuré (KV indisponible)</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
 
-				{/* ── Exemple de requête ── */}
-				<section className={styles.section}>
-					<h2 className={styles.titreSec}>{t("exemple_titre")}</h2>
-					<pre className={styles.bloc}>{`curl -X POST ${urlEndpoint} \\
+        {/* ── Exemple de requête ── */}
+        <section className={styles.section}>
+          <h2 className={styles.titreSec}>{t("exemple_titre")}</h2>
+          <pre className={styles.bloc}>{`curl -X POST ${urlEndpoint} \\
   -H "X-API-Key: votre-cle-api" \\
   -H "Content-Type: application/json" \\
   -o reunion.ics \\
@@ -129,9 +137,9 @@ VERSION:2.0
       "fuseau": "Europe/Paris"
     }
   }'`}</pre>
-				</section>
-			</main>
-			<Footer />
-		</div>
-	);
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
 }

@@ -188,7 +188,16 @@ interface CarteEvenementProps {
   optionsRappel: { valeur: string; libelle: string }[];
 }
 
-function CarteEvenement({ evenement, index, peutSupprimer, onChange, onSupprimer, erreurs, t, optionsRappel }: CarteEvenementProps) {
+function CarteEvenement({
+  evenement,
+  index,
+  peutSupprimer,
+  onChange,
+  onSupprimer,
+  erreurs,
+  t,
+  optionsRappel,
+}: CarteEvenementProps) {
   const prefixId = `evt-${evenement.id}`;
 
   return (
@@ -223,7 +232,11 @@ function CarteEvenement({ evenement, index, peutSupprimer, onChange, onSupprimer
           aria-invalid={!!erreurs.titre}
           required
         />
-        {erreurs.titre && <span id={`erreur-${prefixId}-titre`} className={styles.messageErreur}>{erreurs.titre}</span>}
+        {erreurs.titre && (
+          <span id={`erreur-${prefixId}-titre`} className={styles.messageErreur}>
+            {erreurs.titre}
+          </span>
+        )}
       </div>
 
       {/* Notes */}
@@ -254,7 +267,8 @@ function CarteEvenement({ evenement, index, peutSupprimer, onChange, onSupprimer
       <div className={styles.ligneDeuxColonnes}>
         <div className={styles.groupe}>
           <label htmlFor={`${prefixId}-debut`}>
-            {evenement.touteLaJournee ? t("date_debut") : t("heure_debut")} <span className={styles.obligatoire}>*</span>
+            {evenement.touteLaJournee ? t("date_debut") : t("heure_debut")}{" "}
+            <span className={styles.obligatoire}>*</span>
           </label>
           <input
             id={`${prefixId}-debut`}
@@ -266,7 +280,11 @@ function CarteEvenement({ evenement, index, peutSupprimer, onChange, onSupprimer
             aria-invalid={!!erreurs.dateDebut}
             required
           />
-          {erreurs.dateDebut && <span id={`erreur-${prefixId}-debut`} className={styles.messageErreur}>{erreurs.dateDebut}</span>}
+          {erreurs.dateDebut && (
+            <span id={`erreur-${prefixId}-debut`} className={styles.messageErreur}>
+              {erreurs.dateDebut}
+            </span>
+          )}
         </div>
 
         <div className={styles.groupe}>
@@ -283,7 +301,11 @@ function CarteEvenement({ evenement, index, peutSupprimer, onChange, onSupprimer
             aria-invalid={!!erreurs.dateFin}
             required
           />
-          {erreurs.dateFin && <span id={`erreur-${prefixId}-fin`} className={styles.messageErreur}>{erreurs.dateFin}</span>}
+          {erreurs.dateFin && (
+            <span id={`erreur-${prefixId}-fin`} className={styles.messageErreur}>
+              {erreurs.dateFin}
+            </span>
+          )}
         </div>
       </div>
 

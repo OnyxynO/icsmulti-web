@@ -2,14 +2,10 @@
 // (ex : /api/generate). Ne contient pas de provider i18n ni de polices.
 // Le vrai layout localisé est dans app/[locale]/layout.tsx.
 
-export default function RootLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
-	return (
-		<html>
-			<body>{children}</body>
-		</html>
-	);
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="fr">
+      <body>{children}</body>
+    </html>
+  );
 }

@@ -3,54 +3,49 @@
 
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
 const geistSans = Geist({
-	variable: "--font-geist-sans",
-	subsets: ["latin"],
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"],
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-	title: "ICSMulti — Générateur de fichier .ics",
-	description:
-		"Créez des fichiers .ics (RFC 5545) compatibles avec Apple Calendrier, Google Calendar et Outlook. Support des occurrences multiples, rappels et fuseaux horaires.",
+  title: "ICSMulti — Générateur de fichier .ics",
+  description:
+    "Créez des fichiers .ics (RFC 5545) compatibles avec Apple Calendrier, Google Calendar et Outlook. Support des occurrences multiples, rappels et fuseaux horaires.",
 };
 
 type Props = {
-	children: React.ReactNode;
-	params: Promise<{ locale: string }>;
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 };
 
 export default async function LocaleLayout({ children, params }: Props) {
-	const { locale } = await params;
+  const { locale } = await params;
 
-	// Affiche 404 si la locale n'est pas supportée
-	if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
-		notFound();
-	}
+  // Affiche 404 si la locale n'est pas supportée
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
+    notFound();
+  }
 
-	// Les messages sont chargés côté serveur et passés au Provider côté client
-	const messages = await getMessages();
+  // Les messages sont chargés côté serveur et passés au Provider côté client
+  const messages = await getMessages();
 
-	return (
-		<html
-			lang={locale}
-			className={`${geistSans.variable} ${geistMono.variable}`}
-		>
-			<body>
-				<NextIntlClientProvider messages={messages}>
-					{children}
-				</NextIntlClientProvider>
-			</body>
-		</html>
-	);
+  return (
+    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body>
+        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+      </body>
+    </html>
+  );
 }

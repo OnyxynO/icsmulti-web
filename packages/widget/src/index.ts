@@ -1,8 +1,8 @@
 // Point d'entrée du widget ICSMulti intégrable
 // Bundle IIFE — exposé globalement via window.ICSMulti
 
-import { genererICS } from "@icsmulti/core";
 import type { Evenement, Occurrence } from "@icsmulti/core";
+import { genererICS } from "@icsmulti/core";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -268,9 +268,7 @@ function detecterLang(lang?: "fr" | "en"): "fr" | "en" {
 /** Résout le thème en "light" ou "dark". */
 function resoudreTheme(theme?: "light" | "dark" | "auto"): "light" | "dark" {
   if (theme === "light" || theme === "dark") return theme;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 /** Injecte le CSS dans <head> si pas déjà présent. */
@@ -305,11 +303,7 @@ function telecharger(contenu: string, nomFichier: string): void {
 // (aucune donnée utilisateur incluse dans la structure HTML).
 // Les valeurs utilisateur sont lues via .value après coup — pas de risque XSS.
 
-function creerFormulaire(
-  conteneur: HTMLElement,
-  libelles: Libelles,
-  theme: "light" | "dark"
-): void {
+function creerFormulaire(conteneur: HTMLElement, libelles: Libelles, theme: "light" | "dark"): void {
   // Application du thème sur le conteneur parent
   conteneur.classList.remove("icsmulti-dark", "icsmulti-light");
   conteneur.classList.add(theme === "dark" ? "icsmulti-dark" : "icsmulti-light");
@@ -373,15 +367,9 @@ function creerFormulaire(
   conteneur.innerHTML = html; // nosec — template statique, pas de données utilisateur
 
   // Synchroniser les inputs date quand "journée entière" change
-  const checkboxJournee = conteneur.querySelector<HTMLInputElement>(
-    '[data-champ="journee"]'
-  );
-  const inputDebut = conteneur.querySelector<HTMLInputElement>(
-    '[data-champ="debut"]'
-  );
-  const inputFin = conteneur.querySelector<HTMLInputElement>(
-    '[data-champ="fin"]'
-  );
+  const checkboxJournee = conteneur.querySelector<HTMLInputElement>('[data-champ="journee"]');
+  const inputDebut = conteneur.querySelector<HTMLInputElement>('[data-champ="debut"]');
+  const inputFin = conteneur.querySelector<HTMLInputElement>('[data-champ="fin"]');
 
   checkboxJournee?.addEventListener("change", () => {
     const estJournee = checkboxJournee.checked;
@@ -390,9 +378,7 @@ function creerFormulaire(
   });
 
   // Bouton téléchargement
-  const bouton = conteneur.querySelector<HTMLButtonElement>(
-    '[data-action="telecharger"]'
-  );
+  const bouton = conteneur.querySelector<HTMLButtonElement>('[data-action="telecharger"]');
   bouton?.addEventListener("click", () => {
     gererTelechargement(conteneur, libelles);
   });
@@ -400,60 +386,31 @@ function creerFormulaire(
 
 // ── Validation et téléchargement ───────────────────────────────────────────
 
-function afficherErreur(
-  conteneur: HTMLElement,
-  champ: string,
-  message: string
-): void {
-  const span = conteneur.querySelector<HTMLElement>(
-    `[data-erreur="${champ}"]`
-  );
-  const input = conteneur.querySelector<HTMLElement>(
-    `[data-champ="${champ}"]`
-  );
+function afficherErreur(conteneur: HTMLElement, champ: string, message: string): void {
+  const span = conteneur.querySelector<HTMLElement>(`[data-erreur="${champ}"]`);
+  const input = conteneur.querySelector<HTMLElement>(`[data-champ="${champ}"]`);
   if (span) span.textContent = message; // textContent — pas de risque XSS
   input?.classList.add("icsmulti-erreur");
 }
 
 function effacerErreurs(conteneur: HTMLElement): void {
-  conteneur
-    .querySelectorAll<HTMLElement>(".icsmulti-msg-erreur")
-    .forEach((el) => {
-      el.textContent = "";
-    });
-  conteneur
-    .querySelectorAll<HTMLElement>(".icsmulti-erreur")
-    .forEach((el) => {
-      el.classList.remove("icsmulti-erreur");
-    });
+  conteneur.querySelectorAll<HTMLElement>(".icsmulti-msg-erreur").forEach((el) => {
+    el.textContent = "";
+  });
+  conteneur.querySelectorAll<HTMLElement>(".icsmulti-erreur").forEach((el) => {
+    el.classList.remove("icsmulti-erreur");
+  });
 }
 
-function gererTelechargement(
-  conteneur: HTMLElement,
-  libelles: Libelles
-): void {
+function gererTelechargement(conteneur: HTMLElement, libelles: Libelles): void {
   effacerErreurs(conteneur);
 
-  const valeurTitre =
-    conteneur
-      .querySelector<HTMLInputElement>('[data-champ="titre"]')
-      ?.value.trim() ?? "";
-  const valeurDebut =
-    conteneur.querySelector<HTMLInputElement>('[data-champ="debut"]')
-      ?.value ?? "";
-  const valeurFin =
-    conteneur.querySelector<HTMLInputElement>('[data-champ="fin"]')?.value ??
-    "";
-  const estJournee =
-    conteneur.querySelector<HTMLInputElement>('[data-champ="journee"]')
-      ?.checked ?? false;
-  const valeurLieu =
-    conteneur
-      .querySelector<HTMLInputElement>('[data-champ="lieu"]')
-      ?.value.trim() ?? "";
-  const valeurRappel =
-    conteneur.querySelector<HTMLSelectElement>('[data-champ="rappel"]')
-      ?.value ?? "";
+  const valeurTitre = conteneur.querySelector<HTMLInputElement>('[data-champ="titre"]')?.value.trim() ?? "";
+  const valeurDebut = conteneur.querySelector<HTMLInputElement>('[data-champ="debut"]')?.value ?? "";
+  const valeurFin = conteneur.querySelector<HTMLInputElement>('[data-champ="fin"]')?.value ?? "";
+  const estJournee = conteneur.querySelector<HTMLInputElement>('[data-champ="journee"]')?.checked ?? false;
+  const valeurLieu = conteneur.querySelector<HTMLInputElement>('[data-champ="lieu"]')?.value.trim() ?? "";
+  const valeurRappel = conteneur.querySelector<HTMLSelectElement>('[data-champ="rappel"]')?.value ?? "";
 
   // ── Validation ──
   let valide = true;
@@ -512,7 +469,7 @@ function gererTelechargement(
   }
 
   // Garde-fou : dates invalides (valeurs corrompues ou navigateur non-standard)
-  if (isNaN(dateDebut.getTime()) || isNaN(dateFin.getTime())) {
+  if (Number.isNaN(dateDebut.getTime()) || Number.isNaN(dateFin.getTime())) {
     afficherErreur(conteneur, "debut", libelles.erreurDateDebut);
     return;
   }
@@ -526,6 +483,8 @@ function gererTelechargement(
 
   const occurrence: Occurrence = {
     id: uid,
+    titre: valeurTitre,
+    notes: "",
     dateDebut,
     dateFin,
     lieu: valeurLieu,
@@ -534,15 +493,11 @@ function gererTelechargement(
   };
 
   const evenement: Evenement = {
-    titre: valeurTitre,
-    notes: "",
     occurrences: [occurrence],
   };
 
   const contenuICS = genererICS(evenement);
-  const nomFichier = `${valeurTitre
-    .replace(/[^a-z0-9]/gi, "_")
-    .toLowerCase()}.ics`;
+  const nomFichier = `${valeurTitre.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.ics`;
   telecharger(contenuICS, nomFichier);
 }
 
@@ -558,9 +513,7 @@ export function init(options: OptionsWidget = {}): void {
   const conteneur = document.querySelector<HTMLElement>(selecteur);
 
   if (!conteneur) {
-    console.warn(
-      `[ICSMulti] Conteneur introuvable : "${selecteur}". Assurez-vous que l'élément existe dans le DOM.`
-    );
+    console.warn(`[ICSMulti] Conteneur introuvable : "${selecteur}". Assurez-vous que l'élément existe dans le DOM.`);
     return;
   }
 

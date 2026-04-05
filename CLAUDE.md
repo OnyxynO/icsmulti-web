@@ -98,8 +98,8 @@ Le nom du fichier `.ics` exporté est basé sur le titre de la première occurre
 
 ## À faire
 
-- **CI/CD** : pas de GitHub Actions — ajouter un workflow qui lance `npm test` + `npm run check` (Biome) à chaque push/PR
-- **Tests automatisés widget** : `packages/widget` n'a pas de tests — envisager des tests d'intégration sur le bundle IIFE (chargement, rendu, export)
+- [x] **CI/CD** : `.github/workflows/ci.yml` — `npm test` + `biome check` sur push/PR vers main
+- [x] **Tests automatisés widget** : 22 tests Vitest + jsdom dans `packages/widget/src/index.test.ts`
 
 ## Pièges connus
 
@@ -108,3 +108,4 @@ Le nom du fichier `.ics` exporté est basé sur le titre de la première occurre
 - Next.js 16 : toutes les APIs request sont async — `await cookies()`, `await headers()`, `await params`
 - Widget : CSS scopé avec préfixe `icsmulti-` pour éviter les collisions dans les sites hôtes
 - **Matcher proxy.ts** : utiliser `api/` (avec slash) et non `api` dans le lookahead négatif — sinon toutes les pages dont le nom commence par "api" (ex: `/api-docs`, `/api-key`) sont exclues du middleware i18n et tombent en 404
+- **Tests widget / jsdom** : `matchMedia`, `URL.createObjectURL` et `URL.revokeObjectURL` ne sont pas implémentés dans jsdom — les mocker en tête du fichier de test avec `Object.defineProperty` + `vi.fn()`

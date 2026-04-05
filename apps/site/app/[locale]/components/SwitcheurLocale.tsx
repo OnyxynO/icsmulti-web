@@ -4,28 +4,29 @@
 // et déclencher la navigation vers la locale opposée.
 
 import { useLocale } from "next-intl";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import styles from "./SwitcheurLocale.module.css";
 
 export default function SwitcheurLocale() {
-	const locale = useLocale();
-	const router = useRouter();
-	const pathname = usePathname();
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
 
-	const localeCible = locale === "fr" ? "en" : "fr";
+  const localeCible = locale === "fr" ? "en" : "fr";
 
-	function basculer() {
-		// Navigue vers le même chemin dans l'autre locale
-		router.replace(pathname, { locale: localeCible });
-	}
+  function basculer() {
+    // Navigue vers le même chemin dans l'autre locale
+    router.replace(pathname, { locale: localeCible });
+  }
 
-	return (
-		<button
-			onClick={basculer}
-			className={styles.bouton}
-			aria-label={`Passer en ${localeCible.toUpperCase()}`}
-		>
-			{locale === "fr" ? "EN" : "FR"}
-		</button>
-	);
+  return (
+    <button
+      type="button"
+      onClick={basculer}
+      className={styles.bouton}
+      aria-label={`Passer en ${localeCible.toUpperCase()}`}
+    >
+      {locale === "fr" ? "EN" : "FR"}
+    </button>
+  );
 }

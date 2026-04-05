@@ -45,10 +45,7 @@ const evenementValide = {
 };
 
 /** Construit une NextRequest POST vers /api/generate */
-function creerRequete(
-  corps: unknown,
-  cleAPI?: string,
-): NextRequest {
+function creerRequete(corps: unknown, cleAPI?: string): NextRequest {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -152,10 +149,7 @@ describe("POST /api/generate", () => {
 
   it("retourne 400 si occurrences est un tableau vide", async () => {
     const { POST } = await import("./route");
-    const req = creerRequete(
-      { evenement: { ...evenementValide, occurrences: [] } },
-      "ma-cle",
-    );
+    const req = creerRequete({ evenement: { ...evenementValide, occurrences: [] } }, "ma-cle");
     const res = await POST(req);
 
     expect(res.status).toBe(400);
@@ -171,9 +165,7 @@ describe("POST /api/generate", () => {
       {
         evenement: {
           ...evenementValide,
-          occurrences: [
-            { ...evenementValide.occurrences[0], dateDebut: "pas-une-date" },
-          ],
+          occurrences: [{ ...evenementValide.occurrences[0], dateDebut: "pas-une-date" }],
         },
       },
       "ma-cle",
@@ -205,11 +197,7 @@ describe("POST /api/generate", () => {
     const req = creerRequete({ evenement: evenementValide }, "ma-cle");
     await POST(req);
 
-    expect(mockHincrby).toHaveBeenCalledWith(
-      expect.stringContaining("apikey:"),
-      "usageCount",
-      1,
-    );
+    expect(mockHincrby).toHaveBeenCalledWith(expect.stringContaining("apikey:"), "usageCount", 1);
   });
 
   // ── 400 — dateFin invalide ────────────────────────────────────────────────
@@ -220,9 +208,7 @@ describe("POST /api/generate", () => {
       {
         evenement: {
           ...evenementValide,
-          occurrences: [
-            { ...evenementValide.occurrences[0], dateFin: "pas-une-date" },
-          ],
+          occurrences: [{ ...evenementValide.occurrences[0], dateFin: "pas-une-date" }],
         },
       },
       "ma-cle",
@@ -254,10 +240,7 @@ describe("POST /api/generate", () => {
       throw new Error('Fuseau horaire invalide : "UTC+2". Utiliser un identifiant IANA comme "Europe/Paris".');
     });
     const { POST } = await import("./route");
-    const req = creerRequete(
-      { evenement: evenementValide, options: { fuseau: "UTC+2" } },
-      "ma-cle",
-    );
+    const req = creerRequete({ evenement: evenementValide, options: { fuseau: "UTC+2" } }, "ma-cle");
     const res = await POST(req);
 
     expect(res.status).toBe(400);
@@ -270,11 +253,14 @@ describe("POST /api/generate", () => {
   it("le nom de fichier dans Content-Disposition est basé sur le titre de la première occurrence", async () => {
     const { POST } = await import("./route");
     // Titre ASCII simple pour un résultat prévisible sans ambiguïté d'encodage
-    const req = creerRequete({
-      evenement: {
-        occurrences: [{ ...evenementValide.occurrences[0], titre: "Mon Evenement Test" }],
+    const req = creerRequete(
+      {
+        evenement: {
+          occurrences: [{ ...evenementValide.occurrences[0], titre: "Mon Evenement Test" }],
+        },
       },
-    }, "ma-cle");
+      "ma-cle",
+    );
     const res = await POST(req);
 
     expect(res.status).toBe(200);
@@ -286,10 +272,7 @@ describe("POST /api/generate", () => {
 
   it("transmet les options (fuseau) à genererICS quand elles sont présentes", async () => {
     const { POST } = await import("./route");
-    const req = creerRequete(
-      { evenement: evenementValide, options: { fuseau: "America/New_York" } },
-      "ma-cle",
-    );
+    const req = creerRequete({ evenement: evenementValide, options: { fuseau: "America/New_York" } }, "ma-cle");
     await POST(req);
 
     // genererICS doit avoir été appelé avec les occurrences et les options
@@ -302,7 +285,9 @@ describe("POST /api/generate", () => {
   // ── 200 — compteur non incrémenté en cas d'erreur ─────────────────────────
 
   it("n'incrémente pas le compteur si genererICS lève une erreur", async () => {
-    mockGenererICS.mockImplementationOnce(() => { throw new Error("Fuseau horaire invalide"); });
+    mockGenererICS.mockImplementationOnce(() => {
+      throw new Error("Fuseau horaire invalide");
+    });
     const { POST } = await import("./route");
     const req = creerRequete({ evenement: evenementValide, options: { fuseau: "UTC+2" } }, "ma-cle");
     await POST(req);

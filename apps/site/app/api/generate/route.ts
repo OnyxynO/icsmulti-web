@@ -3,9 +3,9 @@
 // Authentification par clé API (header X-API-Key) hashée en SHA-256,
 // stockée dans Upstash KV sous la clé `apikey:{hash}`.
 
-import { type NextRequest } from "next/server";
-import { genererICS, type Evenement, type OptionsExport } from "@icsmulti/core";
-import { redis, hashCle, type CleAPI } from "@/lib/kv";
+import { type Evenement, genererICS, type OptionsExport } from "@icsmulti/core";
+import type { NextRequest } from "next/server";
+import { type CleAPI, hashCle, redis } from "@/lib/kv";
 
 // Corps de requête attendu
 interface CorpsRequete {
@@ -16,29 +16,20 @@ interface CorpsRequete {
 export async function POST(request: NextRequest): Promise<Response> {
   // ── 1. Vérifier que Upstash est configuré ────────────────────────────────────
   if (!redis) {
-    return Response.json(
-      { error: "Service non configuré" },
-      { status: 503 },
-    );
+    return Response.json({ error: "Service non configuré" }, { status: 503 });
   }
 
   // ── 2. Lire et valider la clé API ────────────────────────────────────────────
   const cleRecue = request.headers.get("X-API-Key");
   if (!cleRecue) {
-    return Response.json(
-      { error: "Clé API manquante" },
-      { status: 401 },
-    );
+    return Response.json({ error: "Clé API manquante" }, { status: 401 });
   }
 
   const hash = await hashCle(cleRecue);
   const cle = await redis.hgetall<CleAPI>(`apikey:${hash}`);
 
   if (!cle) {
-    return Response.json(
-      { error: "Clé API invalide" },
-      { status: 403 },
-    );
+    return Response.json({ error: "Clé API invalide" }, { status: 403 });
   }
 
   // ── 3. Parser et valider le corps JSON ───────────────────────────────────────
@@ -46,28 +37,19 @@ export async function POST(request: NextRequest): Promise<Response> {
   try {
     corps = (await request.json()) as CorpsRequete;
   } catch {
-    return Response.json(
-      { error: "Corps JSON invalide" },
-      { status: 400 },
-    );
+    return Response.json({ error: "Corps JSON invalide" }, { status: 400 });
   }
 
   const { evenement, options } = corps;
 
   if (!Array.isArray(evenement?.occurrences) || evenement.occurrences.length === 0) {
-    return Response.json(
-      { error: "L'événement doit contenir au moins une occurrence" },
-      { status: 400 },
-    );
+    return Response.json({ error: "L'événement doit contenir au moins une occurrence" }, { status: 400 });
   }
 
   // Valider que chaque occurrence a un titre non vide
   for (const occ of evenement.occurrences) {
     if (!occ.titre || (occ.titre as string).trim() === "") {
-      return Response.json(
-        { error: "Chaque occurrence doit avoir un titre non vide" },
-        { status: 400 },
-      );
+      return Response.json({ error: "Chaque occurrence doit avoir un titre non vide" }, { status: 400 });
     }
   }
 
