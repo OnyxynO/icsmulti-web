@@ -438,6 +438,77 @@ describe("genererICS", () => {
     expect(resultat).toContain("TRIGGER:-PT60M");
   });
 
+  // ── VTIMEZONE ─────────────────────────────────────────────────────────────
+
+  it("VTIMEZONE présent pour les occurrences horodatées", () => {
+    const resultat = genererICS(evenementSimple);
+    expect(resultat).toContain("BEGIN:VTIMEZONE");
+    expect(resultat).toContain("TZID:Europe/Paris");
+    expect(resultat).toContain("END:VTIMEZONE");
+  });
+
+  it("VTIMEZONE placé avant le premier VEVENT", () => {
+    const resultat = genererICS(evenementSimple);
+    expect(resultat.indexOf("BEGIN:VTIMEZONE")).toBeLessThan(resultat.indexOf("BEGIN:VEVENT"));
+  });
+
+  it("VTIMEZONE absent quand toutes les occurrences sont en journée entière", () => {
+    const occ: Occurrence = {
+      ...occurrenceSimple,
+      touteLaJournee: true,
+      dateDebut: new Date(Date.UTC(2024, 5, 20)),
+      dateFin: new Date(Date.UTC(2024, 5, 20)),
+    };
+    const resultat = genererICS({ occurrences: [occ] });
+    expect(resultat).not.toContain("BEGIN:VTIMEZONE");
+  });
+
+  it("VTIMEZONE contient STANDARD et DAYLIGHT pour Europe/Paris (fuseau avec DST)", () => {
+    const resultat = genererICS(evenementSimple);
+    expect(resultat).toContain("BEGIN:STANDARD");
+    expect(resultat).toContain("BEGIN:DAYLIGHT");
+  });
+
+  it("VTIMEZONE Europe/Paris : offsets +0100 (hiver) et +0200 (été) présents", () => {
+    const resultat = genererICS(evenementSimple);
+    expect(resultat).toContain("+0100");
+    expect(resultat).toContain("+0200");
+  });
+
+  it("VTIMEZONE sans DAYLIGHT pour un fuseau sans DST (UTC)", () => {
+    const resultat = genererICS(evenementSimple, { fuseau: "UTC" });
+    expect(resultat).toContain("BEGIN:VTIMEZONE");
+    expect(resultat).not.toContain("BEGIN:DAYLIGHT");
+  });
+
+  it("VTIMEZONE UTC : TZOFFSETFROM et TZOFFSETTO à +0000", () => {
+    const resultat = genererICS(evenementSimple, { fuseau: "UTC" });
+    const lignes = depilerLignes(resultat);
+    const from = lignes.find((l) => l.startsWith("TZOFFSETFROM:"));
+    const to = lignes.find((l) => l.startsWith("TZOFFSETTO:"));
+    expect(from).toBe("TZOFFSETFROM:+0000");
+    expect(to).toBe("TZOFFSETTO:+0000");
+  });
+
+  it("VTIMEZONE America/New_York : offsets EST (-0500) et EDT (-0400) présents", () => {
+    const resultat = genererICS(evenementSimple, { fuseau: "America/New_York" });
+    expect(resultat).toContain("TZID:America/New_York");
+    expect(resultat).toContain("-0500");
+    expect(resultat).toContain("-0400");
+  });
+
+  it("VTIMEZONE présent quand mélange journée entière et horodatée", () => {
+    const occJournee: Occurrence = {
+      ...occurrenceSimple,
+      id: "occ-jour",
+      touteLaJournee: true,
+      dateDebut: new Date(Date.UTC(2024, 5, 20)),
+      dateFin: new Date(Date.UTC(2024, 5, 20)),
+    };
+    const resultat = genererICS({ occurrences: [occurrenceSimple, occJournee] });
+    expect(resultat).toContain("BEGIN:VTIMEZONE");
+  });
+
   // ── Échappement dans le lieu ──────────────────────────────────────────────
 
   it("échappe les virgules dans le lieu", () => {

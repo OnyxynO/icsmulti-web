@@ -65,7 +65,7 @@ function replierLigne(ligne: string): string {
     }
 
     const segment = new TextDecoder().decode(octets.slice(debut, fin));
-    segments.push(debut === 0 ? segment : " " + segment);
+    segments.push(debut === 0 ? segment : ` ${segment}`);
     debut = fin;
   }
 
@@ -139,6 +139,133 @@ function formaterDtstamp(date: Date): string {
   const minute = date.getUTCMinutes().toString().padStart(2, "0");
   const seconde = date.getUTCSeconds().toString().padStart(2, "0");
   return `${annee}${mois}${jour}T${heure}${minute}${seconde}Z`;
+}
+
+// ─── Génération VTIMEZONE ────────────────────────────────────────────────────
+
+/**
+ * Calcule l'offset UTC en minutes pour une date dans un fuseau horaire.
+ * Positif = à l'est de UTC (ex: Europe/Paris UTC+2 → 120).
+ */
+function calcOffset(date: Date, fuseau: string): number {
+  const fmt = new Intl.DateTimeFormat("en-GB", {
+    timeZone: fuseau,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const p = fmt.formatToParts(date);
+  const get = (t: string) => p.find((x) => x.type === t)?.value ?? "00";
+  const localUTC = Date.UTC(
+    +get("year"),
+    +get("month") - 1,
+    +get("day"),
+    +get("hour").replace(/^24$/, "00"),
+    +get("minute"),
+    +get("second"),
+  );
+  return Math.round((localUTC - date.getTime()) / 60_000);
+}
+
+/**
+ * Formate un offset en minutes en chaîne ±HHMM (ex : +0200, -0500).
+ */
+function formaterTzOffset(minutes: number): string {
+  const signe = minutes >= 0 ? "+" : "-";
+  const abs = Math.abs(minutes);
+  return `${signe}${Math.floor(abs / 60)
+    .toString()
+    .padStart(2, "0")}${(abs % 60).toString().padStart(2, "0")}`;
+}
+
+/**
+ * Trouve par dichotomie le premier instant où l'offset change dans [tsDebut, tsFin].
+ * Précision : 1 minute.
+ */
+function trouverTransitionDST(fuseau: string, tsDebut: number, tsFin: number): Date {
+  let a = tsDebut;
+  let b = tsFin;
+  const offA = calcOffset(new Date(a), fuseau);
+  while (b - a > 60_000) {
+    const mid = Math.floor((a + b) / 2);
+    if (calcOffset(new Date(mid), fuseau) === offA) a = mid;
+    else b = mid;
+  }
+  return new Date(b);
+}
+
+/**
+ * Génère le bloc VTIMEZONE RFC 5545 §3.6.5 pour un fuseau IANA.
+ * Utilise l'API Intl pour calculer les transitions dynamiquement — aucune dépendance.
+ *
+ * - Fuseau sans DST (UTC, Asia/Tokyo…) → STANDARD uniquement
+ * - Fuseau avec DST → STANDARD + DAYLIGHT, avec RDATE pour chaque année des occurrences
+ */
+function genererVTimezone(fuseau: string, annees: number[]): string {
+  const anneeRef = annees[0];
+  const offJan = calcOffset(new Date(Date.UTC(anneeRef, 0, 15)), fuseau);
+  const offJul = calcOffset(new Date(Date.UTC(anneeRef, 6, 15)), fuseau);
+  const aDst = offJan !== offJul;
+
+  let bloc = `BEGIN:VTIMEZONE${CRLF}`;
+  bloc += propriete("TZID", fuseau);
+
+  if (!aDst) {
+    // Fuseau sans DST — STANDARD uniquement
+    bloc += `BEGIN:STANDARD${CRLF}`;
+    bloc += propriete("DTSTART", "19700101T000000");
+    bloc += propriete("TZOFFSETFROM", formaterTzOffset(offJan));
+    bloc += propriete("TZOFFSETTO", formaterTzOffset(offJan));
+    bloc += `END:STANDARD${CRLF}`;
+  } else {
+    // L'offset le moins élevé = heure standard (hiver dans l'hémisphère nord)
+    const offStd = Math.min(offJan, offJul);
+    const offDst = Math.max(offJan, offJul);
+
+    const rdStd: string[] = [];
+    const rdDst: string[] = [];
+
+    for (const annee of annees) {
+      for (let mois = 0; mois < 12; mois++) {
+        const tsDebut = Date.UTC(annee, mois, 1);
+        const tsFin = Date.UTC(annee, mois + 1, 1) - 1;
+
+        // Pas de transition ce mois-ci
+        if (calcOffset(new Date(tsDebut), fuseau) === calcOffset(new Date(tsFin), fuseau)) continue;
+
+        const transition = trouverTransitionDST(fuseau, tsDebut, tsFin);
+        // Heure locale après la transition (dans le nouveau fuseau)
+        const dtLocal = formaterDateHeure(transition, fuseau);
+        const offApres = calcOffset(new Date(transition.getTime() + 60_000), fuseau);
+
+        if (offApres === offStd) rdStd.push(dtLocal);
+        else rdDst.push(dtLocal);
+      }
+    }
+
+    // ── STANDARD (heure d'hiver) ──
+    bloc += `BEGIN:STANDARD${CRLF}`;
+    bloc += propriete("DTSTART", rdStd[0] ?? "19701025T030000");
+    if (rdStd.length > 1) bloc += propriete("RDATE", rdStd.slice(1).join(","));
+    bloc += propriete("TZOFFSETFROM", formaterTzOffset(offDst));
+    bloc += propriete("TZOFFSETTO", formaterTzOffset(offStd));
+    bloc += `END:STANDARD${CRLF}`;
+
+    // ── DAYLIGHT (heure d'été) ──
+    bloc += `BEGIN:DAYLIGHT${CRLF}`;
+    bloc += propriete("DTSTART", rdDst[0] ?? "19700329T020000");
+    if (rdDst.length > 1) bloc += propriete("RDATE", rdDst.slice(1).join(","));
+    bloc += propriete("TZOFFSETFROM", formaterTzOffset(offStd));
+    bloc += propriete("TZOFFSETTO", formaterTzOffset(offDst));
+    bloc += `END:DAYLIGHT${CRLF}`;
+  }
+
+  bloc += `END:VTIMEZONE${CRLF}`;
+  return bloc;
 }
 
 // ─── Génération des blocs ICS ─────────────────────────────────────────────────
@@ -235,6 +362,15 @@ export function genererICS(evenement: Evenement, options?: OptionsExport): strin
   contenu += propriete("PRODID", "-//ICSMulti//ICSMulti Web//FR");
   contenu += propriete("CALSCALE", "GREGORIAN");
   contenu += propriete("METHOD", "PUBLISH");
+
+  // VTIMEZONE requis par RFC 5545 §3.6.5 quand des occurrences horodatées utilisent TZID
+  const occHorodatees = evenement.occurrences.filter((o) => !o.touteLaJournee);
+  if (occHorodatees.length > 0) {
+    const annees = [
+      ...new Set(occHorodatees.flatMap((o) => [o.dateDebut.getUTCFullYear(), o.dateFin.getUTCFullYear()])),
+    ].sort((a, b) => a - b);
+    contenu += genererVTimezone(fuseau, annees);
+  }
 
   for (const occurrence of evenement.occurrences) {
     contenu += genererVevent(occurrence, fuseau, maintenant);
