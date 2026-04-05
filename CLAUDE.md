@@ -28,7 +28,7 @@ icsmulti-web/
 |---|---|
 | Next.js 16.2 + React 19 | `apps/site` |
 | Biome 2.x | lint + format — `npm run check` depuis la racine |
-| Vitest | tests `packages/core` (40 tests) + `apps/site` (15 tests) |
+| Vitest | tests `packages/core` (51 tests) + `apps/site` (15 tests) + `packages/widget` (25 tests) |
 | Vite (lib mode IIFE) | build `packages/widget` |
 | next-intl 4.9 | i18n FR + EN — fr sans préfixe, en avec /en |
 | Upstash KV | stockage clés API |
@@ -49,7 +49,9 @@ Toujours builder `core` en premier — `site` et `widget` en dépendent.
 - [x] **Phase 4** — Module API : `POST /api/generate` + clés API (Upstash KV) + page `/api-key`
 - [x] **Phase 5** — Site landing : i18n next-intl + pages `/app`, `/api-docs`, `/widget`, `/desktop`
 - [x] **Phase 6** — Module widget : bundle Vite IIFE → `apps/site/public/widget.js`
-- [x] **Tests** — 57 tests Vitest (42 core RFC 5545 + 15 route handler POST /api/generate)
+- [x] **Tests** — 91 tests Vitest (51 core RFC 5545 + 15 route handler + 25 widget jsdom)
+- [x] **CI/CD** — `.github/workflows/ci.yml` — `npm test` + `biome check` sur push/PR
+- [x] **VTIMEZONE RFC 5545 §3.6.5** — calcul DST dynamique via API Intl, sans dépendance
 - [x] **Démo live** — DemoWidget Client Component sur /widget (next/script + ICSMulti.init())
 - [x] **Doc API** — /api-docs : schéma complet, codes d'erreur, curl corrigé
 - [x] **Refactoring titre/notes par occurrence** — chaque VEVENT est indépendant (web + Swift)
@@ -85,6 +87,7 @@ Le nom du fichier `.ics` exporté est basé sur le titre de la première occurre
 - Rappels : bloc `VALARM` avec `TRIGGER:-PTxM`
 - `DTSTAMP` et `UID` uniques par occurrence
 - Fuseau horaire explicite dans `DTSTART`/`DTEND` (défaut `Europe/Paris`)
+- `VTIMEZONE` généré dynamiquement pour chaque fuseau IANA utilisé (calcul DST via `Intl`)
 
 ## Conventions
 
@@ -98,8 +101,7 @@ Le nom du fichier `.ics` exporté est basé sur le titre de la première occurre
 
 ## À faire
 
-- [x] **CI/CD** : `.github/workflows/ci.yml` — `npm test` + `biome check` sur push/PR vers main
-- [x] **Tests automatisés widget** : 22 tests Vitest + jsdom dans `packages/widget/src/index.test.ts`
+Rien — projet complet.
 
 ## Pièges connus
 
