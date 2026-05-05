@@ -101,7 +101,16 @@ Le nom du fichier `.ics` exporté est basé sur le titre de la première occurre
 
 ## À faire
 
-Rien — projet complet.
+**Upstash KV — non configuré (décision consciente)**
+
+L'API REST (`POST /api/generate` + page `/api-key`) nécessite un compte Upstash et deux variables d'env sur Vercel :
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+
+Ces variables n'ont jamais été ajoutées → l'API retourne 503 `"Service non configuré"` en prod.
+
+Pourquoi le faire un jour : permettre à des tiers d'intégrer le générateur ICS via l'API REST sans passer par l'UI. Tier gratuit Upstash largement suffisant (10 000 req/jour).
+Setup estimé : ~15 min (créer compte Upstash → copier les deux variables → ajouter dans Vercel Settings → Environment Variables → redéployer).
 
 ## Pièges connus
 
