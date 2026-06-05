@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "apps/site/.next",
-  "installCommand": "npm install",
+  "installCommand": "rm -f package-lock.json && npm install",
   "framework": "nextjs"
 }
