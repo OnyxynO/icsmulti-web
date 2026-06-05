@@ -20,7 +20,7 @@ jobs:
           cache: "npm"
 
       - name: Installer les dépendances
-        run: npm ci
+        run: npm install
 
       - name: Builder packages/core (requis par les tests site et widget)
         run: npm run build -w packages/core
