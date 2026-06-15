@@ -1,5 +1,7 @@
 # CLAUDE.md — icsmulti-web
 
+@../../PRINCIPES.md
+
 ## Contexte projet
 
 Extension web de l'app macOS ICSMulti (Swift, repo `icsmulti`).
