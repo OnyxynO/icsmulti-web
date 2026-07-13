@@ -29,9 +29,10 @@ icsmulti-web/
 ## Stack
 
 - **Next.js 16.2** + React 19 (App Router, Server Components)
-- **next-intl 4.9** — i18n FR / EN
+- **TypeScript 6**
+- **next-intl 4.13** — i18n FR / EN
 - **CSS Modules** — pas de Tailwind
-- **Biome 2.x** — lint + format
+- **Biome 2.5** — lint + format
 - **Vitest** — tests unitaires `packages/core`
 - **Vite** (lib mode IIFE) — build `packages/widget`
 - **Upstash Redis** — stockage des clés API
