@@ -29,10 +29,11 @@ icsmulti-web/
 | Outil | Usage |
 |---|---|
 | Next.js 16.2 + React 19 | `apps/site` |
-| Biome 2.x | lint + format — `npm run check` depuis la racine |
+| TypeScript 6 | tout le monorepo |
+| Biome 2.5 | lint + format — `npm run check` depuis la racine |
 | Vitest | tests `packages/core` (51 tests) + `apps/site` (15 tests) + `packages/widget` (25 tests) |
-| Vite (lib mode IIFE) | build `packages/widget` |
-| next-intl 4.9 | i18n FR + EN — fr sans préfixe, en avec /en |
+| Vite 8 (lib mode IIFE) | build `packages/widget` |
+| next-intl 4.13 | i18n FR + EN — fr sans préfixe, en avec /en |
 | Upstash KV | stockage clés API |
 
 ## Ordre de build
@@ -123,3 +124,5 @@ Setup estimé : ~15 min (créer compte Upstash → copier les deux variables →
 - **Matcher proxy.ts** : utiliser `api/` (avec slash) et non `api` dans le lookahead négatif — sinon toutes les pages dont le nom commence par "api" (ex: `/api-docs`, `/api-key`) sont exclues du middleware i18n et tombent en 404
 - **Tests widget / jsdom** : `matchMedia`, `URL.createObjectURL` et `URL.revokeObjectURL` ne sont pas implémentés dans jsdom — les mocker en tête du fichier de test avec `Object.defineProperty` + `vi.fn()`
 - **rollup linux — CI et Vercel** : `package-lock.json` généré sur macOS arm64 ne contient que `@rollup/rollup-darwin-arm64`. Sur Linux, le binaire `linux-x64-gnu` est absent → build Vite (widget) échoue. Fix dans CI (`.github/workflows/ci.yml`) : `rm -f package-lock.json && npm install`. Fix dans Vercel (`vercel.json`) : `"installCommand": "rm -f package-lock.json && npm install"`. Les deux points sont affectés indépendamment.
+- **`biome migrate --write` désactive silencieusement le lint** : sur la migration 2.3.5 → 2.5.3, `rules.recommended: true` (déprécié) a été traduit en `rules.preset: "none"` au lieu de `"recommended"` — 0 erreur remontée, mais plus aucune règle active. Toujours relire `biome.json` après une migration et vérifier `preset` (`"recommended"` attendu ici).
+- **override npm sur une dépendance transitive de Next.js** : après un `npm install` incrémental, `overrides.postcss` peut sembler ignoré (`npm ls` montre encore la version pinnée par `next`). Un `rm -rf node_modules package-lock.json && npm install` complet est nécessaire pour que l'override se propage correctement dans le lockfile.

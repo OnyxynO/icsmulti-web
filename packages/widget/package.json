@@ -16,10 +16,10 @@
     "@icsmulti/core": "*"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.8",
-    "jsdom": "^26.1.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "jsdom": "^29.1.1",
     "typescript": "*",
-    "vite": "^6.4.2",
-    "vitest": "^4.1.8"
+    "vite": "^8.1.4",
+    "vitest": "^4.1.10"
   }
 }
