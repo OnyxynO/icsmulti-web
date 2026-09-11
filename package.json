@@ -17,10 +17,10 @@
     "typescript": "^6.0.3"
   },
   "overrides": {
-    "sharp": ">=0.35.0",
+    "sharp": ">=0.35.4",
     "next": {
       "postcss": ">=8.5.18",
-      "sharp": ">=0.35.0"
+      "sharp": ">=0.35.4"
     },
     "shell-quote": "^1.8.4",
     "esbuild": "^0.28.1",
